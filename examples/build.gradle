@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation project(':')
+}
+
+application {
+    mainClass = project.hasProperty('main') ? main : 'examples.HelloWorld'
+}

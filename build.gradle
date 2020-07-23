@@ -1,0 +1,39 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+
+    testImplementation 'junit:junit:4.13'
+}
+
+processResources {
+    from("wasmtime-jni/target/release") {
+        include '*.dylib'
+    }
+}
+
+task buildJniLib(type:Exec) {
+    workingDir './wasmtime-jni'
+    commandLine 'cargo', 'build', '--release'
+}
+classes.dependsOn(buildJniLib)
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+group = 'wasmtime'
+version = '0.1.0'
