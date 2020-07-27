@@ -53,6 +53,22 @@ fn get_func(env: &JNIEnv, this: JObject, name: JString) -> Result<jlong> {
 }
 
 #[no_mangle]
+extern "system" fn Java_wasmtime_Instance_nativeGetMemory(
+    env: JNIEnv,
+    this: JObject,
+    name: JString,
+) -> jlong {
+    wrap_error!(env, get_memory(&env, this, name))
+}
+
+fn get_memory(env: &JNIEnv, this: JObject, name: JString) -> Result<jlong> {
+    let instance = interop::get_inner::<Instance>(env, this)?;
+    let name = utils::get_string(env, *name)?;
+    let memory = instance.get_memory(&name);
+    Ok(memory.map(interop::into_raw).unwrap_or(0))
+}
+
+#[no_mangle]
 extern "system" fn Java_wasmtime_Instance_dispose(env: JNIEnv, this: JObject) {
     wrap_error!(env, interop::take_inner::<Instance>(&env, this));
 }

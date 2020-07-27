@@ -23,6 +23,10 @@ public class Extern {
         return new Extern(Type.FUNC, func);
     }
 
+    public static Extern fromMemory(Memory memory) {
+        return new Extern(Type.MEMORY, memory);
+    }
+
     private void ensureType(Type expected) {
         if (type != expected) {
             throw new RuntimeException(
@@ -33,5 +37,10 @@ public class Extern {
     public Func func() {
         ensureType(Type.FUNC);
         return (Func) value;
+    }
+
+    public Memory memory() {
+        ensureType(Type.MEMORY);
+        return (Memory) value;
     }
 }

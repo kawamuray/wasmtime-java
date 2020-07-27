@@ -9,6 +9,8 @@ crate_type = ["cdylib"]
 
 [dependencies]
 jni = "0.17.0"
-wasmtime = "0.18.0"
 thiserror = "1.0.20"
 anyhow = "1.0.31"
+wasmtime = "0.19.0"
+wasmtime-wasi = "0.19.1"
+wasi-common = "0.19.1"

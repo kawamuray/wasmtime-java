@@ -1,6 +1,6 @@
 package wasmtime;
 
-interface Disposable extends AutoCloseable {
+public interface Disposable extends AutoCloseable {
     @Override
     default void close() {
         dispose();

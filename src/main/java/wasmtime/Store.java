@@ -12,7 +12,8 @@ public class Store implements Disposable {
         NativeLibraryLoader.load();
     }
 
-    @Getter(AccessLevel.PACKAGE)
+    // TODO: can't make this package-private as long as we separate some packages like wasi
+    @Getter
     private long innerPtr;
 
     public Store() {

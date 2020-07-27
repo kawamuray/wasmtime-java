@@ -26,8 +26,15 @@ public class Instance implements Disposable {
         return ptr == 0 ? Optional.empty() : Optional.of(new Func(ptr));
     }
 
+    public Optional<Memory> getMemory(String name) {
+        long ptr = nativeGetMemory(name);
+        return ptr == 0 ? Optional.empty() : Optional.of(new Memory(ptr));
+    }
+
     @Override
     public native void dispose();
 
     private native long nativeGetFunc(String name);
+
+    private native long nativeGetMemory(String name);
 }

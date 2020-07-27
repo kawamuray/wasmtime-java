@@ -1,6 +1,7 @@
 use anyhow;
 use jni::{self, JNIEnv};
 use thiserror::Error;
+use wasi_common::WasiCtxBuilderError;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -16,6 +17,8 @@ pub enum Error {
     NotImplemented,
     #[error("{0}")]
     LockPoison(String),
+    #[error("{0}")]
+    WasiConfig(#[from] WasiCtxBuilderError),
 }
 
 impl<G> From<std::sync::PoisonError<G>> for Error {
@@ -51,16 +54,17 @@ pub fn jni_error_to_exception(env: &JNIEnv, err: jni::errors::Error) {
     }
 }
 
-pub fn wasmtime_error_to_exception(env: &JNIEnv, err: anyhow::Error) {
-    env.throw_new("wasmtime/WasmtimeException", err.to_string())
-        .expect("failed throwing exception");
+pub fn throw_wasmtime_exception(env: &JNIEnv, msg: &str) {
+    env.throw_new("wasmtime/WasmtimeException", msg)
+        .expect("failed throwing exception")
 }
 
 pub fn error_to_exception(env: &JNIEnv, err: Error) {
     use Error::*;
     match err {
         Jni(e) => jni_error_to_exception(env, e),
-        Wasmtime(e) => wasmtime_error_to_exception(env, e),
+        Wasmtime(e) => throw_wasmtime_exception(env, &e.to_string()),
+        WasiConfig(e) => throw_wasmtime_exception(env, &e.to_string()),
         UnknownEnum(_) | NotImplemented | LockPoison(_) => throw_exception(env, &err.to_string()),
     }
 }
@@ -80,6 +84,15 @@ macro_rules! wrap_error {
         match $body {
             Ok(v) => v,
             Err(e) => return crate::errors::return_error(&$env, e),
+        }
+    };
+    ($env:expr, $body:expr, $default:expr) => {
+        match $body {
+            Ok(v) => v,
+            Err(e) => {
+                crate::errors::error_to_exception(&$env, e);
+                $default
+            }
         }
     };
 }

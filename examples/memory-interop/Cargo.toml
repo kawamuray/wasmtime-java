@@ -1,0 +1,10 @@
+[package]
+name = "memory-interop"
+version = "0.1.0"
+authors = ["Yuto Kawamura <kawamuray.dadada@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ['cdylib']
+
+[dependencies]
