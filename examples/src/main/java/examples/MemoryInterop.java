@@ -17,6 +17,7 @@ import wasmtime.WasmFunctions;
 import wasmtime.WasmFunctions.Consumer0;
 import wasmtime.wasi.Wasi;
 import wasmtime.wasi.WasiConfig;
+import wasmtime.wasi.WasiConfig.PreopenDir;
 
 public class MemoryInterop {
     // Build it with `cargo wasi build`
@@ -31,7 +32,7 @@ public class MemoryInterop {
         AtomicReference<Memory> memRef = new AtomicReference<>();
         try (Store store = new Store();
              Linker linker = new Linker(store);
-             Wasi wasi = new Wasi(store, new WasiConfig(new String[0]));
+             Wasi wasi = new Wasi(store, new WasiConfig(new String[0], new PreopenDir[0]));
              Func pollWordFn = WasmFunctions.wrap(store, I64, I32, I32, (addr, len) -> {
                  System.err.println("Address to store word: " + addr);
                  ByteBuffer buf = memRef.get().buffer();

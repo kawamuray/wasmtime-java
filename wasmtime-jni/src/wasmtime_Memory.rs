@@ -1,4 +1,4 @@
-use crate::errors::{self, Result};
+use crate::errors::Result;
 use crate::{interop, wrap_error};
 use jni::objects::{JClass, JObject};
 use jni::sys::{jint, jlong, jobject};
@@ -58,13 +58,7 @@ fn mem_buffer(env: &JNIEnv, this: JObject) -> Result<jobject> {
 
 #[no_mangle]
 extern "system" fn Java_wasmtime_Memory_buffer(env: JNIEnv, this: JObject) -> jobject {
-    match mem_buffer(&env, this) {
-        Ok(obj) => obj,
-        Err(e) => {
-            errors::error_to_exception(&env, e);
-            JObject::null().into_inner()
-        }
-    }
+    wrap_error!(env, mem_buffer(&env, this), JObject::null().into_inner())
 }
 
 #[no_mangle]

@@ -1,5 +1,6 @@
 use anyhow;
 use jni::{self, JNIEnv};
+use std::io;
 use thiserror::Error;
 use wasi_common::WasiCtxBuilderError;
 
@@ -19,6 +20,8 @@ pub enum Error {
     LockPoison(String),
     #[error("{0}")]
     WasiConfig(#[from] WasiCtxBuilderError),
+    #[error("IO error: {0}")]
+    Io(#[from] io::Error),
 }
 
 impl<G> From<std::sync::PoisonError<G>> for Error {
@@ -65,6 +68,7 @@ pub fn error_to_exception(env: &JNIEnv, err: Error) {
         Jni(e) => jni_error_to_exception(env, e),
         Wasmtime(e) => throw_wasmtime_exception(env, &e.to_string()),
         WasiConfig(e) => throw_wasmtime_exception(env, &e.to_string()),
+        Io(e) => throw_exception(env, &e.to_string()),
         UnknownEnum(_) | NotImplemented | LockPoison(_) => throw_exception(env, &err.to_string()),
     }
 }

@@ -1,6 +1,7 @@
 package wasmtime;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 @AllArgsConstructor
 public class Trap {
@@ -13,7 +14,7 @@ public class Trap {
     private final String message;
     private final int exitCode;
 
-    public static Trap fromMessage(String message) {
+    public static Trap fromMessage(@NonNull String message) {
         return new Trap(Type.MESSAGE, message, 0);
     }
 
@@ -22,6 +23,6 @@ public class Trap {
     }
 
     public static Trap fromException(Throwable e) {
-        return fromMessage(e.getMessage());
+        return fromMessage(String.valueOf(e));
     }
 }
