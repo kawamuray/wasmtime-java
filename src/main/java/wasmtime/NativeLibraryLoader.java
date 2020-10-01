@@ -11,9 +11,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 final class NativeLibraryLoader {
     private static final String NATIVE_LIBRARY_NAME = "wasmtime_jni";
+    private static final String DISABLE_AUTO_LOAD_ENV = "WASMTIME_JNI_LOAD_DISABLED";
     private static boolean loaded;
 
     private NativeLibraryLoader() {}
+
+    public static synchronized void init() {
+        if (System.getenv(DISABLE_AUTO_LOAD_ENV) == null) {
+            load();
+        }
+    }
 
     public static synchronized void load() {
         if (loaded) {

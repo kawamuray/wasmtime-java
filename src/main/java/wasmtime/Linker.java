@@ -30,11 +30,11 @@ public class Linker implements Disposable {
     @Override
     public native void dispose();
 
-    private static native long newLinker(long innerPtr);
+    private static native long newLinker(long storePtr);
 
     private native void nativeModule(String moduleName, long modulePtr);
 
-    private native void nativeDefine(String moduleName, String name, Extern extern);
+    private native void nativeDefine(String moduleName, String name, Extern externItem);
 
     private native Extern nativeGetOneByName(String module, String name);
 }

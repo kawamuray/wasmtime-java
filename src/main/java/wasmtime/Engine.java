@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Engine implements Disposable {
     static {
-        NativeLibraryLoader.load();
+        NativeLibraryLoader.init();
     }
 
     @Getter(AccessLevel.PACKAGE)

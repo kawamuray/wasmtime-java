@@ -23,5 +23,5 @@ public class Memory implements Disposable {
     @Override
     public native void dispose();
 
-    private static native long newMemory(long innerPtr, int min, int max);
+    private static native long newMemory(long storePtr, int min, int max);
 }

@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Store implements Disposable {
     static {
-        NativeLibraryLoader.load();
+        NativeLibraryLoader.init();
     }
 
     // TODO: can't make this package-private as long as we separate some packages like wasi

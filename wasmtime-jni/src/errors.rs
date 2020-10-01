@@ -1,4 +1,6 @@
 use anyhow;
+use jni::descriptors::Desc;
+use jni::objects::JThrowable;
 use jni::{self, JNIEnv};
 use std::io;
 use thiserror::Error;
@@ -30,73 +32,33 @@ impl<G> From<std::sync::PoisonError<G>> for Error {
     }
 }
 
-pub fn throw_exception(env: &JNIEnv, msg: &str) {
-    env.throw_new("java/lang/RuntimeException", msg)
-        .expect("failed throwing RuntimeException");
-}
-
-/// AAAA
-/// Apparently jni-rs has `ToException` trait that supposably prepared
-/// for this purpose but it doesn't seems to be implemented.
-pub fn jni_error_to_exception(env: &JNIEnv, err: jni::errors::Error) {
-    use jni::errors::ErrorKind::*;
-    match err.kind() {
-        JavaException => {
-            let exception = env
-                .exception_occurred()
-                .expect("failed obtaining exception");
-            env.throw(exception).expect("failed throwing exception");
-        }
-        NullPtr(_) | NullDeref(_) => env
-            .throw_new("java/lang/NullPointerException", err.to_string())
-            .expect("failed throwing NullPointerException"),
-        _ => throw_exception(
-            &env,
-            &format!("unknown exception caught (likely a BUG): {}", err),
-        ),
-    }
-}
-
-pub fn throw_wasmtime_exception(env: &JNIEnv, msg: &str) {
-    env.throw_new("wasmtime/WasmtimeException", msg)
-        .expect("failed throwing exception")
-}
-
-pub fn error_to_exception(env: &JNIEnv, err: Error) {
-    use Error::*;
-    match err {
-        Jni(e) => jni_error_to_exception(env, e),
-        Wasmtime(e) => throw_wasmtime_exception(env, &e.to_string()),
-        WasiConfig(e) => throw_wasmtime_exception(env, &e.to_string()),
-        Io(e) => throw_exception(env, &e.to_string()),
-        UnknownEnum(_) | NotImplemented | LockPoison(_) => throw_exception(env, &err.to_string()),
-    }
-}
-
-pub fn return_error<T, E>(env: &JNIEnv, err: E) -> T
-where
-    T: Default,
-    E: Into<Error>,
-{
-    error_to_exception(env, err.into());
-    T::default()
-}
-
-#[macro_export]
-macro_rules! wrap_error {
-    ($env:expr, $body:expr) => {
-        match $body {
-            Ok(v) => v,
-            Err(e) => return crate::errors::return_error(&$env, e),
-        }
-    };
-    ($env:expr, $body:expr, $default:expr) => {
-        match $body {
-            Ok(v) => v,
-            Err(e) => {
-                crate::errors::error_to_exception(&$env, e);
-                $default
+impl<'a> Desc<'a, JThrowable<'a>> for Error {
+    fn lookup(self, env: &JNIEnv<'a>) -> jni::errors::Result<JThrowable<'a>> {
+        use Error::*;
+        let (ex_class, msg) = match &self {
+            Jni(e) => {
+                use jni::errors::ErrorKind::*;
+                match e.kind() {
+                    JavaException => return env.exception_occurred(),
+                    NullPtr(_) | NullDeref(_) => {
+                        ("java/lang/NullPointerException", self.to_string())
+                    }
+                    _ => (
+                        "java/lang/RuntimeException",
+                        format!("unknown exception caught (likely a BUG): {}", self),
+                    ),
+                }
             }
-        }
-    };
+            Wasmtime(e) => ("wasmtime/WasmtimeException", e.to_string()),
+            WasiConfig(e) => ("wasmtime/WasmtimeException", e.to_string()),
+            Io(_) | UnknownEnum(_) | NotImplemented | LockPoison(_) => {
+                ("java/lang/RuntimeException", self.to_string())
+            }
+        };
+
+        let jmsg = env.new_string(msg)?;
+        Ok(env
+            .new_object(ex_class, "(Ljava/lang/String;)V", &[jmsg.into()])?
+            .into())
+    }
 }
