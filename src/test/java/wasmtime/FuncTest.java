@@ -99,9 +99,9 @@ public class FuncTest {
         FuncType fnType = new FuncType(new Type[] { Type.I64, Type.I64 }, new Type[] { Type.I64 });
         try (Store store = new Store()) {
             try (Func ignored = new Func(store, fnType, (caller, params, results) -> Optional.empty())) {
-                assertNotNull("Func.registry = " + Func.registry, Func.registry.lookup(0));
+                assertEquals(1, Func.registry.map.size());
             }
         }
-        assertNull(Func.registry.lookup(0));
+        assertEquals(0, Func.registry.map.size());
     }
 }

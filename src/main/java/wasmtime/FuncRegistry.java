@@ -9,7 +9,8 @@ import wasmtime.Func.Handler;
 
 @ToString
 class FuncRegistry {
-    private final ConcurrentMap<Integer, Handler> map;
+    // visible for testing
+    final ConcurrentMap<Integer, Handler> map;
     private final AtomicInteger indexCounter;
 
     FuncRegistry() {
