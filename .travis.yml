@@ -3,7 +3,7 @@ rust:
 - stable
 jobs:
   include:
-  - stage: "Build on Linux"
+  - stage: build
     os: linux
     deploy:
       provider: releases
@@ -16,8 +16,7 @@ jobs:
       on:
         tags: true
         repo: kawamuray/wasmtime-java
-  - stage: "Build on Mac"
-    os: osx
+  - os: osx
     deploy:
       provider: releases
       api_key:
@@ -29,7 +28,7 @@ jobs:
       on:
         tags: true
         repo: kawamuray/wasmtime-java
-  - stage: "Build and publish universal jar"
+  - stage: build universal jar
     os: linux
     before_deploy: .travis/build-universal-jar.sh
     deploy:
