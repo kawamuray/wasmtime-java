@@ -23,9 +23,32 @@ compileJava {
     options.compilerArgs << '-parameters'
 }
 
+static def jniLibOsClassifier() {
+    def os = System.getProperty("os.name").toLowerCase()
+    if (os.contains("linux")) {
+        return "linux"
+    }
+    if (os.contains("mac os") || os.contains("darwin")) {
+        return "macos"
+    }
+    throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
+}
+
 processResources {
-    from("wasmtime-jni/target/release") {
-        include '*.dylib'
+    dependsOn 'metaProperties', 'copyJniLib'
+    from(new File(project.buildDir, "tmp")) {
+        include 'wasmtime-java-meta.properties'
+    }
+    from(new File(project.buildDir, "jni-libs")) {
+        include "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
+    }
+}
+
+task metaProperties() {
+    doLast {
+        def props = new Properties()
+        props.setProperty("jnilib.version", "${project.version}")
+        props.store(new File(project.buildDir, "tmp/wasmtime-java-meta.properties").newOutputStream(), null)
     }
 }
 
@@ -76,7 +99,21 @@ task buildJniLib(type:Exec) {
     workingDir './wasmtime-jni'
     commandLine 'cargo', 'build', '--release'
 }
-processResources.dependsOn(buildJniLib)
+
+task copyJniLib(type: Copy) {
+    dependsOn 'buildJniLib'
+    from "wasmtime-jni/target/release"
+    include '*.so', '*.dylib'
+    rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
+    into new File(project.buildDir, "jni-libs")
+}
+
+task universalJar(type: Jar) {
+    dependsOn 'jar'
+    archiveClassifier.set("universal")
+    from zipTree(jar.outputs.files.singleFile)
+    from new File(project.rootDir, "jni-libs")
+}
 
 publishing {
     publications {
