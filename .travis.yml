@@ -43,8 +43,9 @@ jobs:
         tags: true
         repo: kawamuray/wasmtime-java
 before_install:
+- curl --fail -L https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh -o /tmp/install-jdk.sh
 - export JAVA_HOME=$HOME/openjdk11
-- ~/bin/install-jdk.sh --install openjdk11 --target $JAVA_HOME
+- . /tmp/install-jdk.sh --install openjdk11 --target $JAVA_HOME
 # https://docs.travis-ci.com/user/languages/java/#caching
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
