@@ -3,14 +3,47 @@ rust:
 - stable
 jobs:
   include:
-  - os: linux
-    # We need to keep using this dist to make oraclejdk8 installation work.
-    # https://travis-ci.community/t/install-of-oracle-jdk-8-failing/3038/9
-    dist: trusty
-  - os: osx
+  - stage: "Build on Linux"
+    os: linux
+    deploy:
+      provider: releases
+      api_key:
+        secure: Ed5OZTQ9c57rnJO8Lz5s8AIMICo4bMhvwLNkpyQB1fjtPKJBwqa83OwLjppg+maOzsUAjaWI0D0SzdH0K8w8YGU5PK8vzFyIuU2RoFm54u6aj9Q0xM4/FU7rCTPZcpFtutpCnaflP6gzIvT9NhAtAP9n+GD23VFIpOS4KdO7Fq023sTtNHlotDon2o5GswKZg2Xry3KYSr/fhKi7y/0LS20YrFjAJdQq7Vbtipp/b6cQ0iWFHUjRzFD5bF5Dcv9z6JhGxhtx7E3tX+0IP/fhvqFYHLNR7h0Peai8kMwE0bcdsWHP7/RT6eElxnwxfp9xUrCTfBud+D6X3MBe0D3G4ww+9vPQeLyTHbFtrW/QHtWHO05SgBj/Hr9s7DK/1sAeQSGz9KAAtD58W6NZXctD1QOcS9BaskXmzgMYPwGiRy+ClmG+aoIlYjKfSeiPShpM7w4N1tmD6cS7PHIq9MpuVv9vNQZP8DGHy02C5/eQPMA3qz5hBUQDdQtJ7x/muH5JMZ/Q1drg69xBpsjrM8Gw0fdbUrYcqq0bjoZF0J93QXoSZWn/1BmDJihrIp7DXaJXuLa3vs5ZnVgbkIf73jptiSLQeofCijGZEwjSOJ0hZ4hwH8P4DGTURNI4GbWqMvWjmYJ3XAC5lBWg/r4cVmvMYlx13SxMrLHMRg24ncWVAkY=
+      draft: true
+      file_glob: true
+      file: build/jni-libs/libwasmtime_jni_*
+      cleanup: true
+      on:
+        tags: true
+        repo: kawamuray/wasmtime-java
+  - stage: "Build on Mac"
+    os: osx
+    deploy:
+      provider: releases
+      api_key:
+        secure: Ed5OZTQ9c57rnJO8Lz5s8AIMICo4bMhvwLNkpyQB1fjtPKJBwqa83OwLjppg+maOzsUAjaWI0D0SzdH0K8w8YGU5PK8vzFyIuU2RoFm54u6aj9Q0xM4/FU7rCTPZcpFtutpCnaflP6gzIvT9NhAtAP9n+GD23VFIpOS4KdO7Fq023sTtNHlotDon2o5GswKZg2Xry3KYSr/fhKi7y/0LS20YrFjAJdQq7Vbtipp/b6cQ0iWFHUjRzFD5bF5Dcv9z6JhGxhtx7E3tX+0IP/fhvqFYHLNR7h0Peai8kMwE0bcdsWHP7/RT6eElxnwxfp9xUrCTfBud+D6X3MBe0D3G4ww+9vPQeLyTHbFtrW/QHtWHO05SgBj/Hr9s7DK/1sAeQSGz9KAAtD58W6NZXctD1QOcS9BaskXmzgMYPwGiRy+ClmG+aoIlYjKfSeiPShpM7w4N1tmD6cS7PHIq9MpuVv9vNQZP8DGHy02C5/eQPMA3qz5hBUQDdQtJ7x/muH5JMZ/Q1drg69xBpsjrM8Gw0fdbUrYcqq0bjoZF0J93QXoSZWn/1BmDJihrIp7DXaJXuLa3vs5ZnVgbkIf73jptiSLQeofCijGZEwjSOJ0hZ4hwH8P4DGTURNI4GbWqMvWjmYJ3XAC5lBWg/r4cVmvMYlx13SxMrLHMRg24ncWVAkY=
+      draft: true
+      file_glob: true
+      file: build/jni-libs/libwasmtime_jni_*
+      cleanup: true
+      on:
+        tags: true
+        repo: kawamuray/wasmtime-java
+  - stage: "Build and publish universal jar"
+    os: linux
+    before_deploy: .travis/build-universal-jar.sh
+    deploy:
+      provider: releases
+      api_key:
+        secure: Ed5OZTQ9c57rnJO8Lz5s8AIMICo4bMhvwLNkpyQB1fjtPKJBwqa83OwLjppg+maOzsUAjaWI0D0SzdH0K8w8YGU5PK8vzFyIuU2RoFm54u6aj9Q0xM4/FU7rCTPZcpFtutpCnaflP6gzIvT9NhAtAP9n+GD23VFIpOS4KdO7Fq023sTtNHlotDon2o5GswKZg2Xry3KYSr/fhKi7y/0LS20YrFjAJdQq7Vbtipp/b6cQ0iWFHUjRzFD5bF5Dcv9z6JhGxhtx7E3tX+0IP/fhvqFYHLNR7h0Peai8kMwE0bcdsWHP7/RT6eElxnwxfp9xUrCTfBud+D6X3MBe0D3G4ww+9vPQeLyTHbFtrW/QHtWHO05SgBj/Hr9s7DK/1sAeQSGz9KAAtD58W6NZXctD1QOcS9BaskXmzgMYPwGiRy+ClmG+aoIlYjKfSeiPShpM7w4N1tmD6cS7PHIq9MpuVv9vNQZP8DGHy02C5/eQPMA3qz5hBUQDdQtJ7x/muH5JMZ/Q1drg69xBpsjrM8Gw0fdbUrYcqq0bjoZF0J93QXoSZWn/1BmDJihrIp7DXaJXuLa3vs5ZnVgbkIf73jptiSLQeofCijGZEwjSOJ0hZ4hwH8P4DGTURNI4GbWqMvWjmYJ3XAC5lBWg/r4cVmvMYlx13SxMrLHMRg24ncWVAkY=
+      file_glob: true
+      file: build/libs/wasmtime-java-*-universal.jar
+      cleanup: true
+      on:
+        tags: true
+        repo: kawamuray/wasmtime-java
 before_install:
-# Travis doesn't supports multiple languages (hence SDKs) so install jdk manually
-- jdk_switcher use "oraclejdk8"
+- $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk11 --target $JAVA_HOME
 # https://docs.travis-ci.com/user/languages/java/#caching
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -21,15 +54,3 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
 script: ./gradlew build copyJniLib
-before_deploy:
-- ./gradlew universalJar
-deploy:
-  provider: releases
-  api_key:
-    secure: Ed5OZTQ9c57rnJO8Lz5s8AIMICo4bMhvwLNkpyQB1fjtPKJBwqa83OwLjppg+maOzsUAjaWI0D0SzdH0K8w8YGU5PK8vzFyIuU2RoFm54u6aj9Q0xM4/FU7rCTPZcpFtutpCnaflP6gzIvT9NhAtAP9n+GD23VFIpOS4KdO7Fq023sTtNHlotDon2o5GswKZg2Xry3KYSr/fhKi7y/0LS20YrFjAJdQq7Vbtipp/b6cQ0iWFHUjRzFD5bF5Dcv9z6JhGxhtx7E3tX+0IP/fhvqFYHLNR7h0Peai8kMwE0bcdsWHP7/RT6eElxnwxfp9xUrCTfBud+D6X3MBe0D3G4ww+9vPQeLyTHbFtrW/QHtWHO05SgBj/Hr9s7DK/1sAeQSGz9KAAtD58W6NZXctD1QOcS9BaskXmzgMYPwGiRy+ClmG+aoIlYjKfSeiPShpM7w4N1tmD6cS7PHIq9MpuVv9vNQZP8DGHy02C5/eQPMA3qz5hBUQDdQtJ7x/muH5JMZ/Q1drg69xBpsjrM8Gw0fdbUrYcqq0bjoZF0J93QXoSZWn/1BmDJihrIp7DXaJXuLa3vs5ZnVgbkIf73jptiSLQeofCijGZEwjSOJ0hZ4hwH8P4DGTURNI4GbWqMvWjmYJ3XAC5lBWg/r4cVmvMYlx13SxMrLHMRg24ncWVAkY=
-  file_glob: true
-  file: build/libs/wasmtime-java-*-universal.jar
-  skip_cleanup: true
-  on:
-    tags: true
-    repo: kawamuray/wasmtime-java
