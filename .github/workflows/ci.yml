@@ -62,7 +62,7 @@ jobs:
         release_name: ${{ github.ref }}
     - id: get-tag-version
       run: |
-        version=$(echo ${{github.ref}} | sed 's/^v//')
+        version=$(echo ${{github.ref}} | cut -f3 -d/ | sed 's/^v//')
         echo "::set-output name=version::$version"
     - name: Upload release asset
       uses: actions/upload-release-asset@v1
