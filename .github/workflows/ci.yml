@@ -24,13 +24,9 @@ jobs:
         components: rustfmt
     - name: Build with Gradle
       run: ./gradlew build copyJniLib
-    - name: List all files below build for debug
-      run: |
-        ls -l build/jni-libs
-        ls -l ./wasmtime-jni/target
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: jni-libs
         path: build/jni-libs/*
