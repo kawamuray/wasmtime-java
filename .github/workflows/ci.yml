@@ -53,9 +53,23 @@ jobs:
     - name: Build universal jar
       run: ./gradlew universalJar
     - name: Create release
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
+    - id: get-tag-version
+      run: |
+        version=$(echo ${{github.ref}} | sed 's/^v//')
+        echo "::set-output name=version::$version"
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/libs/wasmtime-java-${{ steps.get-tag-version.outputs.version }}-universal.jar
+        asset_name: wasmtime-java-${{ steps.get-tag-version.outputs.version }}-universal.jar
+        asset_content_type: application/octet-stream
