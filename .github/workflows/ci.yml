@@ -30,6 +30,7 @@ jobs:
         path: build/jni-libs/libwasmtime_jni_*
   publish:
     if: startsWith(github.ref, 'refs/tags/')
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
