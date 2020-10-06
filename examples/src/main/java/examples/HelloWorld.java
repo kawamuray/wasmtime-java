@@ -3,13 +3,13 @@ package examples;
 import java.util.Arrays;
 import java.util.Collection;
 
-import wasmtime.Engine;
-import wasmtime.Extern;
-import wasmtime.Func;
-import wasmtime.Instance;
-import wasmtime.Module;
-import wasmtime.Store;
-import wasmtime.WasmFunctions;
+import io.github.kawamuray.wasmtime.Engine;
+import io.github.kawamuray.wasmtime.Extern;
+import io.github.kawamuray.wasmtime.Func;
+import io.github.kawamuray.wasmtime.Instance;
+import io.github.kawamuray.wasmtime.Module;
+import io.github.kawamuray.wasmtime.Store;
+import io.github.kawamuray.wasmtime.WasmFunctions;
 
 public class HelloWorld {
     public static void main(String[] args) {

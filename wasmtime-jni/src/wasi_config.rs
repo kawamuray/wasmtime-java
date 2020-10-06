@@ -18,7 +18,11 @@ pub fn ctx_from_java(env: &JNIEnv, obj: JObject) -> Result<WasiCtx> {
         args.push(utils::get_string(env, s?)?);
     }
     let preopen_dirs = env
-        .get_field(obj, "preopenDirs", "[Lwasmtime/wasi/WasiConfig$PreopenDir;")?
+        .get_field(
+            obj,
+            "preopenDirs",
+            "[Lio/github/kawamuray/wasmtime/wasi/WasiConfig$PreopenDir;",
+        )?
         .l()?;
     let mut builder = WasiCtxBuilder::new();
     builder.inherit_stdio().inherit_env().args(args);

@@ -4,7 +4,7 @@ plugins {
     id "de.undercouch.download" version "4.1.1"
 }
 
-group = 'wasmtime'
+group = 'io.github.kawamuray.wasmtime'
 version = '0.1.0'
 
 repositories {
@@ -78,14 +78,14 @@ task unzipJavah4x(type: Copy) {
 
 task generateJniInterfaces(type:Exec) {
     def targets = [
-            'wasmtime.Engine',
-            'wasmtime.Func',
-            'wasmtime.Instance',
-            'wasmtime.Linker',
-            'wasmtime.Memory',
-            'wasmtime.Module',
-            'wasmtime.Store',
-            'wasmtime.wasi.Wasi']
+            'io.github.kawamuray.wasmtime.Engine',
+            'io.github.kawamuray.wasmtime.Func',
+            'io.github.kawamuray.wasmtime.Instance',
+            'io.github.kawamuray.wasmtime.Linker',
+            'io.github.kawamuray.wasmtime.Memory',
+            'io.github.kawamuray.wasmtime.Module',
+            'io.github.kawamuray.wasmtime.Store',
+            'io.github.kawamuray.wasmtime.wasi.Wasi']
     dependsOn 'unzipJavah4x', 'compileJava'
     environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
     // JNI shared object isn't available at this stage

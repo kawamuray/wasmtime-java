@@ -5,7 +5,9 @@ use jni::JNIEnv;
 use wasmtime::Trap;
 
 pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Trap> {
-    let ty = env.get_field(obj, "type", "Lwasmtime/Trap$Type;")?.l()?;
+    let ty = env
+        .get_field(obj, "type", "Lio/github/kawamuray/wasmtime/Trap$Type;")?
+        .l()?;
     let name = utils::enum_name(&env, ty)?;
     Ok(match name.as_str() {
         "MESSAGE" => {

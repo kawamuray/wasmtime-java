@@ -6,7 +6,9 @@ use jni::JNIEnv;
 use wasmtime::{Val, ValType};
 
 pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Val> {
-    let ty = env.get_field(obj, "type", "Lwasmtime/Val$Type;")?.l()?;
+    let ty = env
+        .get_field(obj, "type", "Lio/github/kawamuray/wasmtime/Val$Type;")?
+        .l()?;
     let name = utils::enum_name(&env, ty)?;
     Ok(match name.as_str() {
         "I32" => {
@@ -32,24 +34,34 @@ pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Val> {
 pub fn into_java<'a>(env: &'a JNIEnv, val: Val) -> Result<JObject<'a>> {
     Ok(match val {
         Val::I32(v) => env
-            .call_static_method("wasmtime/Val", "fromI32", "(I)Lwasmtime/Val;", &[v.into()])?
+            .call_static_method(
+                "io/github/kawamuray/wasmtime/Val",
+                "fromI32",
+                "(I)Lio/github/kawamuray/wasmtime/Val;",
+                &[v.into()],
+            )?
             .l()?,
         Val::I64(v) => env
-            .call_static_method("wasmtime/Val", "fromI64", "(J)Lwasmtime/Val;", &[v.into()])?
+            .call_static_method(
+                "io/github/kawamuray/wasmtime/Val",
+                "fromI64",
+                "(J)Lio/github/kawamuray/wasmtime/Val;",
+                &[v.into()],
+            )?
             .l()?,
         Val::F32(v) => env
             .call_static_method(
-                "wasmtime/Val",
+                "io/github/kawamuray/wasmtime/Val",
                 "fromF32",
-                "(F)Lwasmtime/Val;",
+                "(F)Lio/github/kawamuray/wasmtime/Val;",
                 &[f32::from_bits(v).into()],
             )?
             .l()?,
         Val::F64(v) => env
             .call_static_method(
-                "wasmtime/Val",
+                "io/github/kawamuray/wasmtime/Val",
                 "fromF64",
-                "(D)Lwasmtime/Val;",
+                "(D)Lio/github/kawamuray/wasmtime/Val;",
                 &[f64::from_bits(v).into()],
             )?
             .l()?,
