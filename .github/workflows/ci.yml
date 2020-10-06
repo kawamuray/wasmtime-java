@@ -46,10 +46,13 @@ jobs:
         toolchain: stable
         override: true
         components: rustfmt
+    - name: Build
+      run: ./gradlew build
     - name: Restore JNI libs
       uses: actions/download-artifact@v2
       with:
         name: jni-libs
+        path: build/jni-libs
     - name: Build universal jar
       run: ./gradlew universalJar
     - name: Create release
