@@ -122,8 +122,11 @@ task copyJniLib(type: Copy) {
 task universalJar(type: Jar) {
     dependsOn 'jar'
     archiveClassifier.set("universal")
-    from zipTree(jar.outputs.files.singleFile)
-    from new File(project.rootDir, "jni-libs")
+    from(zipTree(jar.outputs.files.singleFile)) {
+        // We use libs gathered from different OS build environments so don't use one built in this build.
+        exclude "libwasmtime_jni_*"
+    }
+    from new File(project.buildDir, "jni-libs")
 }
 
 publishing {
