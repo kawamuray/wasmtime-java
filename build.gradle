@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
     id "de.undercouch.download" version "4.1.1"
 }
 
@@ -22,6 +23,8 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 compileJava {
@@ -56,10 +59,12 @@ processResources {
 }
 
 task metaProperties() {
+    def output = new File(project.buildDir, "tmp/wasmtime-java-meta.properties")
+    outputs.file(output)
     doLast {
         def props = new Properties()
         props.setProperty("jnilib.version", "${project.version}")
-        props.store(new File(project.buildDir, "tmp/wasmtime-java-meta.properties").newOutputStream(), null)
+        props.store(output.newOutputStream(), null)
     }
 }
 
@@ -129,10 +134,64 @@ task universalJar(type: Jar) {
     from new File(project.buildDir, "jni-libs")
 }
 
+static def addDependencyNodes(node, deps, scope) {
+    deps.each {
+        def dependencyNode = node.appendNode('dependency')
+        dependencyNode.appendNode('groupId', it.group)
+        dependencyNode.appendNode('artifactId', it.name)
+        dependencyNode.appendNode('version', it.version)
+        dependencyNode.appendNode('scope', scope)
+    }
+}
+
 publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
+    repositories {
+        maven {
+            url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username findProperty("sonatypeUsername")
+                password findProperty("sonatypePassword")
+            }
         }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            artifact source: universalJar, classifier: null
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'wasmtime-java'
+                description = 'Java or JVM-language binding for Wasmtime'
+                url = 'https://github.com/kawamuray/wasmtime-java'
+                scm {
+                    url = 'https://github.com/kawamuray/wasmtime-java.git'
+                    connection = 'scm:https://github.com/kawamuray/wasmtime-java.git'
+                    developerConnection = 'scm:git@github.com:kawamuray/wasmtime-java.git'
+                }
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'Yuto Kawamura'
+                        email = 'kawamuray.dadada@gmail.com'
+                    }
+                }
+                withXml { xml ->
+                    // As we can't use `from components.java`, we have to build dependencies list in .pom manually.
+                    def node = xml.asNode().appendNode('dependencies')
+                    addDependencyNodes(node, project.configurations.api.allDependencies, 'compile')
+                    addDependencyNodes(node, project.configurations.implementation.allDependencies
+                            .findAll { !project.configurations.api.allDependencies.contains(it) }, 'runtime')
+                }
+            }
+        }
+    }
+    signing {
+        required { gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.mavenJava
     }
 }
