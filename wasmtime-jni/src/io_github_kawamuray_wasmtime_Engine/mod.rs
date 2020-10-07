@@ -1,11 +1,11 @@
 // THIS FILE IS GENERATED AUTOMATICALLY. DO NOT EDIT!
 mod imp;
 
+use self::imp::JniEngineImpl;
 use jni::descriptors::Desc;
 use jni::objects::*;
 use jni::sys::*;
 use jni::JNIEnv;
-use self::imp::JniEngineImpl;
 
 macro_rules! wrap_error {
     ($env:expr, $body:expr, $default:expr) => {
@@ -31,7 +31,13 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_dispose(env: JNIEnv,
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngine(env: JNIEnv, clazz: JClass) -> jlong {
-    wrap_error!(env, JniEngineImpl::new_engine(&env, clazz), Default::default())
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngine(
+    env: JNIEnv,
+    clazz: JClass,
+) -> jlong {
+    wrap_error!(
+        env,
+        JniEngineImpl::new_engine(&env, clazz),
+        Default::default()
+    )
 }
-
