@@ -5,10 +5,18 @@ Java (or any JVM) language binding for [Wasmtime](https://github.com/bytecodeall
 
 Some basic examples are working, but many API implementations are work in progress.
 
-# How to build
+# Declaring Dependencies
 
-```sh
-$ ./gradlew build
+Gradle example:
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "io.github.kawamuray.wasmtime:wasmtime-java:$LATEST_VERSION"
+}
 ```
 
 # Example
@@ -40,6 +48,12 @@ public class HelloWasm {
 Run example:
 ```sh
 $ ./gradlew -Pmain=examples.HelloWorld examples:run
+```
+
+# How to build
+
+```sh
+$ ./gradlew build
 ```
 
 # License
