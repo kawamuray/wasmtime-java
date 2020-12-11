@@ -9,6 +9,8 @@ group = 'io.github.kawamuray.wasmtime'
 version = '0.1.0'
 
 repositories {
+    maven { url 'https://maven.aliyun.com/repository/google/' }
+    maven { url 'https://maven.aliyun.com/repository/jcenter/'}
     jcenter()
 }
 
@@ -44,6 +46,9 @@ static def jniLibOsClassifier() {
     }
     if (os.contains("mac os") || os.contains("darwin")) {
         return "macos"
+    }
+    if (os.contains("Windows") || os.contains("windows")){
+        return "windows"
     }
     throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
 }
@@ -81,7 +86,7 @@ task unzipJavah4x(type: Copy) {
     into new File(project.buildDir, "tmp")
 }
 
-task generateJniInterfaces(type:Exec) {
+task generateJniInterfaces(/*type:Exec*/) {
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
@@ -92,21 +97,43 @@ task generateJniInterfaces(type:Exec) {
             'io.github.kawamuray.wasmtime.Store',
             'io.github.kawamuray.wasmtime.wasi.Wasi']
     dependsOn 'unzipJavah4x', 'compileJava'
-    environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
-    // JNI shared object isn't available at this stage
-    environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
-    commandLine(["${project.buildDir}/tmp/javah4x-${javah4xVersion}", 'rust', './wasmtime-jni/src'] + targets)
-    // Manually compare the source (class files) and output (rust sources) to run this task only when any
-    // update is made on classes.
-    outputs.upToDateWhen {
-        def smallestGeneratedTimestamp = targets.collect {
-            new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
-        }.min()
-        def largestSourceTimestamp = targets.collect {
-            def path = "classes/java/main/" + it.replace(".", "/") + ".class"
-            new File(project.buildDir, path).lastModified()
-        }.max()
-        smallestGeneratedTimestamp >= largestSourceTimestamp
+    if(jniLibOsClassifier().equals('windows')){
+        environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(';')
+        // JNI shared object isn't available at this stage
+        environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
+        commandLine(["${project.buildDir}\\tmp\\javah4x-${javah4xVersion}", 'rust', '.\\wasmtime-jni\\src'] + targets)
+        // Manually compare the source (class files) and output (rust sources) to run this task only when any
+        // update is made on classes.
+        outputs.upToDateWhen {
+            def smallestGeneratedTimestamp = targets.collect {
+                new File(project.rootDir, "wasmtime-jni\\src\\${it.replace(".", "_")}\\mod.rs").lastModified()
+            }.min()
+            System.out.println("first")
+            def largestSourceTimestamp = targets.collect {
+                def path = "classes\\java\\main\\" + it.replace(".", "\\") + ".class"
+                new File(project.buildDir, path).lastModified()
+            }.max()
+            System.out.println("second")
+            smallestGeneratedTimestamp >= largestSourceTimestamp
+        }
+        System.out.println("third")
+    }else{
+        environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
+        // JNI shared object isn't available at this stage
+        environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
+        commandLine(["${project.buildDir}/tmp/javah4x-${javah4xVersion}", 'rust', './wasmtime-jni/src'] + targets)
+        // Manually compare the source (class files) and output (rust sources) to run this task only when any
+        // update is made on classes.
+        outputs.upToDateWhen {
+            def smallestGeneratedTimestamp = targets.collect {
+                new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
+            }.min()
+            def largestSourceTimestamp = targets.collect {
+                def path = "classes/java/main/" + it.replace(".", "/") + ".class"
+                new File(project.buildDir, path).lastModified()
+            }.max()
+            smallestGeneratedTimestamp >= largestSourceTimestamp
+        }  
     }
 }
 
@@ -119,7 +146,7 @@ task buildJniLib(type:Exec) {
 task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
     from "wasmtime-jni/target/release"
-    include '*.so', '*.dylib'
+    include '*.so', '*.dylib', '*.dll'
     rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
 }
