@@ -1,13 +1,16 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
     id "de.undercouch.download" version "4.1.1"
 }
 
-group = 'wasmtime'
+group = 'io.github.kawamuray.wasmtime'
 version = '0.1.0'
 
 repositories {
+    maven { url 'https://maven.aliyun.com/repository/google/' }
+    maven { url 'https://maven.aliyun.com/repository/jcenter/'}
     jcenter()
 }
 
@@ -22,10 +25,18 @@ dependencies {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 compileJava {
     options.compilerArgs << '-parameters'
+}
+
+test {
+    testLogging {
+        exceptionFormat "full"
+    }
 }
 
 static def jniLibOsClassifier() {
@@ -35,6 +46,9 @@ static def jniLibOsClassifier() {
     }
     if (os.contains("mac os") || os.contains("darwin")) {
         return "macos"
+    }
+    if (os.contains("Windows") || os.contains("windows")){
+        return "windows"
     }
     throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
 }
@@ -50,10 +64,12 @@ processResources {
 }
 
 task metaProperties() {
+    def output = new File(project.buildDir, "tmp/wasmtime-java-meta.properties")
+    outputs.file(output)
     doLast {
         def props = new Properties()
         props.setProperty("jnilib.version", "${project.version}")
-        props.store(new File(project.buildDir, "tmp/wasmtime-java-meta.properties").newOutputStream(), null)
+        props.store(output.newOutputStream(), null)
     }
 }
 
@@ -70,32 +86,54 @@ task unzipJavah4x(type: Copy) {
     into new File(project.buildDir, "tmp")
 }
 
-task generateJniInterfaces(type:Exec) {
+task generateJniInterfaces(/*type:Exec*/) {
     def targets = [
-            'wasmtime.Engine',
-            'wasmtime.Func',
-            'wasmtime.Instance',
-            'wasmtime.Linker',
-            'wasmtime.Memory',
-            'wasmtime.Module',
-            'wasmtime.Store',
-            'wasmtime.wasi.Wasi']
+            'io.github.kawamuray.wasmtime.Engine',
+            'io.github.kawamuray.wasmtime.Func',
+            'io.github.kawamuray.wasmtime.Instance',
+            'io.github.kawamuray.wasmtime.Linker',
+            'io.github.kawamuray.wasmtime.Memory',
+            'io.github.kawamuray.wasmtime.Module',
+            'io.github.kawamuray.wasmtime.Store',
+            'io.github.kawamuray.wasmtime.wasi.Wasi']
     dependsOn 'unzipJavah4x', 'compileJava'
-    environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
-    // JNI shared object isn't available at this stage
-    environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
-    commandLine(["${project.buildDir}/tmp/javah4x-${javah4xVersion}", 'rust', './wasmtime-jni/src'] + targets)
-    // Manually compare the source (class files) and output (rust sources) to run this task only when any
-    // update is made on classes.
-    outputs.upToDateWhen {
-        def smallestGeneratedTimestamp = targets.collect {
-            new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
-        }.min()
-        def largestSourceTimestamp = targets.collect {
-            def path = "classes/java/main/" + it.replace(".", "/") + ".class"
-            new File(project.buildDir, path).lastModified()
-        }.max()
-        smallestGeneratedTimestamp >= largestSourceTimestamp
+    if(jniLibOsClassifier().equals('windows')){
+        environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(';')
+        // JNI shared object isn't available at this stage
+        environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
+        commandLine(["${project.buildDir}\\tmp\\javah4x-${javah4xVersion}", 'rust', '.\\wasmtime-jni\\src'] + targets)
+        // Manually compare the source (class files) and output (rust sources) to run this task only when any
+        // update is made on classes.
+        outputs.upToDateWhen {
+            def smallestGeneratedTimestamp = targets.collect {
+                new File(project.rootDir, "wasmtime-jni\\src\\${it.replace(".", "_")}\\mod.rs").lastModified()
+            }.min()
+            System.out.println("first")
+            def largestSourceTimestamp = targets.collect {
+                def path = "classes\\java\\main\\" + it.replace(".", "\\") + ".class"
+                new File(project.buildDir, path).lastModified()
+            }.max()
+            System.out.println("second")
+            smallestGeneratedTimestamp >= largestSourceTimestamp
+        }
+        System.out.println("third")
+    }else{
+        environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
+        // JNI shared object isn't available at this stage
+        environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
+        commandLine(["${project.buildDir}/tmp/javah4x-${javah4xVersion}", 'rust', './wasmtime-jni/src'] + targets)
+        // Manually compare the source (class files) and output (rust sources) to run this task only when any
+        // update is made on classes.
+        outputs.upToDateWhen {
+            def smallestGeneratedTimestamp = targets.collect {
+                new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
+            }.min()
+            def largestSourceTimestamp = targets.collect {
+                def path = "classes/java/main/" + it.replace(".", "/") + ".class"
+                new File(project.buildDir, path).lastModified()
+            }.max()
+            smallestGeneratedTimestamp >= largestSourceTimestamp
+        }  
     }
 }
 
@@ -108,7 +146,7 @@ task buildJniLib(type:Exec) {
 task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
     from "wasmtime-jni/target/release"
-    include '*.so', '*.dylib'
+    include '*.so', '*.dylib', '*.dll'
     rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
 }
@@ -116,14 +154,71 @@ task copyJniLib(type: Copy) {
 task universalJar(type: Jar) {
     dependsOn 'jar'
     archiveClassifier.set("universal")
-    from zipTree(jar.outputs.files.singleFile)
-    from new File(project.rootDir, "jni-libs")
+    from(zipTree(jar.outputs.files.singleFile)) {
+        // We use libs gathered from different OS build environments so don't use one built in this build.
+        exclude "libwasmtime_jni_*"
+    }
+    from new File(project.buildDir, "jni-libs")
+}
+
+static def addDependencyNodes(node, deps, scope) {
+    deps.each {
+        def dependencyNode = node.appendNode('dependency')
+        dependencyNode.appendNode('groupId', it.group)
+        dependencyNode.appendNode('artifactId', it.name)
+        dependencyNode.appendNode('version', it.version)
+        dependencyNode.appendNode('scope', scope)
+    }
 }
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
+    repositories {
+        maven {
+            url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username findProperty("sonatypeUsername")
+                password findProperty("sonatypePassword")
+            }
         }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            artifact source: universalJar, classifier: null
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'wasmtime-java'
+                description = 'Java or JVM-language binding for Wasmtime'
+                url = 'https://github.com/kawamuray/wasmtime-java'
+                scm {
+                    url = 'https://github.com/kawamuray/wasmtime-java.git'
+                    connection = 'scm:https://github.com/kawamuray/wasmtime-java.git'
+                    developerConnection = 'scm:git@github.com:kawamuray/wasmtime-java.git'
+                }
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'Yuto Kawamura'
+                        email = 'kawamuray.dadada@gmail.com'
+                    }
+                }
+                withXml { xml ->
+                    // As we can't use `from components.java`, we have to build dependencies list in .pom manually.
+                    def node = xml.asNode().appendNode('dependencies')
+                    addDependencyNodes(node, project.configurations.api.allDependencies, 'compile')
+                    addDependencyNodes(node, project.configurations.implementation.allDependencies
+                            .findAll { !project.configurations.api.allDependencies.contains(it) }, 'runtime')
+                }
+            }
+        }
+    }
+    signing {
+        required { gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.mavenJava
     }
 }
