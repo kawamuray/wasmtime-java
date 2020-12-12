@@ -99,12 +99,20 @@ task generateJniInterfaces(type:Exec) {
     // JNI shared object isn't available at this stage
     environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
     if(jniLibOsClassifier().equals("windows")){
-        commandLine([/*"cmd",*/"java -cp ${project.buildDir}\\tmp;" +
+        File file = new File("./generateJniInterfacesBat.bat")
+        file.createNewFile()
+        file.deleteOnExit()
+        String cmd = ""
+        for(String each:(["cmd","java -cp ${project.buildDir}\\tmp;" +
                 "${project.buildDir}\\tmp\\javah4x;" +
                 "${project.buildDir}\\tmp\\javah4x\\rust;" +
                 "${project.buildDir}\\classes\\java\\main\\io\\github\\kawamuray\\wasmtime;" +
                 "${project.buildDir}\\classes\\java\\main\\io\\github\\kawamuray\\wasmtime\\wasi" +
-                " javah4x.Javah4x", 'rust', '.\\wasmtime-jni\\src'] + targets)
+                " javah4x.Javah4x", 'rust', '.\\wasmtime-jni\\src'] + targets)){
+            cmd+=(each+" ")
+        }
+        file.write(cmd)
+        commandLine("generateJniInterfacesBat.bat")
         // Manually compare the source (class files) and output (rust sources) to run this task only when any
         // update is made on classes.
         outputs.upToDateWhen {
@@ -150,7 +158,7 @@ task copyJniLib(type: Copy) {
         from "wasmtime-jni\\target\\release"
     }else{
         from "wasmtime-jni/target/release"
-    }   
+    }
     include '*.so', '*.dylib', "*.dll"
     rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
