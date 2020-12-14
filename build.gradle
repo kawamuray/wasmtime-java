@@ -84,7 +84,7 @@ task unzipJavah4x(type: Copy) {
     into new File(project.buildDir, "tmp")
 }
 
-task generateJniInterfaces(type:Exec) {
+task generateJniInterfaces(type:Exec) { //LR problem
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
