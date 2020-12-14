@@ -16,7 +16,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'org.slf4j:slf4j-api:1.7.25'
-    compile group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.25'
     testImplementation 'junit:junit:4.13'
 }
 
@@ -46,7 +45,7 @@ static def jniLibOsClassifier() {
     if (os.contains("mac os") || os.contains("darwin")) {
         return "macos"
     }
-    if (os.contains("windows") || os.contains("Windows")){
+    if (os.toLowerCase().contains("windows")){
         return "windows"
     }
     throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
@@ -118,10 +117,10 @@ task generateJniInterfaces(type:Exec) {
         // update is made on classes.
         outputs.upToDateWhen {
             def smallestGeneratedTimestamp = targets.collect {
-                new File(project.rootDir, "wasmtime-jni\\src\\${it.replace(".", "_")}\\mod.rs").lastModified()
+                new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
             }.min()
             def largestSourceTimestamp = targets.collect {
-                def path = "classes\\java\\main\\" + it.replace(".", "\\") + ".class"
+                def path = "classes/java/main/" + it.replace(".", "/") + ".class"
                 new File(project.buildDir, path).lastModified()
             }.max()
             smallestGeneratedTimestamp >= largestSourceTimestamp
