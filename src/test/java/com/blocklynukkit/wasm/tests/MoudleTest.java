@@ -21,14 +21,39 @@ public class MoudleTest {
             System.out.println("总耗时:"+(System.currentTimeMillis()-start)+"ms");
         }
     }
+    /**
+     * @status Failed
+     */
+    public static void testEmscripten(){
+        try(Store store = new Store();
+            Engine engine = store.engine();
+            Module module = Module.fromFile(engine,"emscripten.wasm");
+            Linker linker = new Linker(store)){
+            Func log = WasmFunctions.wrap(store,I32,I32,(arg) -> {
+                System.out.println("回调完毕！"+arg);
+                return arg+1;
+            });
+            Wasi wasi = new Wasi(store,new WasiConfig(new String[]{"-lc-printscan-long-double"},new WasiConfig.PreopenDir[0]));
+            wasi.addToLinker(linker);
+            linker.define("env","logInt",Extern.fromFunc(log));
+            linker.module("test",module);
+            linker.getOneByName("test","_start").func().call();
+        }
+    }
     public static void testWasmPrintDouble(){
         try(Store store = new Store();
             Engine engine = store.engine();
-            Module module = Module.fromFile(engine,"./test.wasm");
+            Module module = Module.fromFile(engine,"printDouble.wasm");
             Linker linker = new Linker(store)){
-            Wasi wasi = new Wasi(store,new WasiConfig(new String[0],new WasiConfig.PreopenDir[0]));
-            linker.module("test",module);
+            Func log = WasmFunctions.wrap(store,I32,I32,(arg) -> {
+                System.out.println("回调完毕！"+arg);
+                return arg+1;
+            });
+            Wasi wasi = new Wasi(store,new WasiConfig(new String[]{"-lc-printscan-long-double"},new WasiConfig.PreopenDir[0]));
             wasi.addToLinker(linker);
+            linker.define("env","logInt",Extern.fromFunc(log));
+            linker.module("test",module);
+            linker.getOneByName("test","_start").func().call();
         }
     }
     public static void testLog(){

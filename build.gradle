@@ -16,7 +16,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'org.slf4j:slf4j-api:1.7.25'
-
+    compile group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.25'
     testImplementation 'junit:junit:4.13'
 }
 
