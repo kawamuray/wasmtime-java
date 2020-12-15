@@ -58,11 +58,10 @@ final class NativeLibraryLoader {
     }
 
     private static String libraryPath() throws IOException {
-        String libName = "lib" + NATIVE_LIBRARY_NAME;
-        String version = libVersion();
         Platform platform = detectPlatform();
+        String version = libVersion();
         String ext = platform.ext;
-        String fileName = libName + '_' + version + '_' + platform.classifier;
+        String fileName = platform.prefix + NATIVE_LIBRARY_NAME + '_' + version + '_' + platform.classifier;
         Path tempFile = Files.createTempFile(fileName, ext);
         try (InputStream in = NativeLibraryLoader.class.getResourceAsStream('/' + fileName + ext)) {
             Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
@@ -81,12 +80,13 @@ final class NativeLibraryLoader {
 
     @AllArgsConstructor
     private enum Platform {
-        LINUX("linux", ".so"),
-        MACOS("macos", ".dylib"),
-        WINDOWS("windows",".dll")
+        LINUX("linux","lib" , ".so"),
+        MACOS("macos","lib", ".dylib"),
+        WINDOWS("windows","",".dll")
         ;
 
         final String classifier;
+        final String prefix;
         final String ext;
     }
 
