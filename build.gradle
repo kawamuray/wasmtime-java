@@ -84,7 +84,7 @@ task unzipJavah4x(type: Copy) {
     into new File(project.buildDir, "tmp")
 }
 
-task generateJniInterfaces(type:Exec) {
+task generateJniInterfaces(type:JavaExec) {
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
@@ -95,10 +95,18 @@ task generateJniInterfaces(type:Exec) {
             'io.github.kawamuray.wasmtime.Store',
             'io.github.kawamuray.wasmtime.wasi.Wasi']
     dependsOn 'unzipJavah4x', 'compileJava'
-    environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
     // JNI shared object isn't available at this stage
     environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
-    commandLine(["${project.buildDir}/tmp/javah4x-${javah4xVersion}", 'rust', './wasmtime-jni/src'] + targets)
+    // The downloaded executable is actually a shell script followed by JAR content.
+    // Avoid executing it as a binary and use it as a JAR in classpath to make it work not only on Unix platform
+    // but also on Windows.
+    classpath "${project.buildDir}/tmp/javah4x-${javah4xVersion}"
+    // Giving `sourceSets.main.runtimeClasspath` directly causes implicit dependency for `classes` task to be
+    // added from this task, causing cyclic dependency. We only need compiled java classes so converting
+    // existing entries to path and collect so it doesn't adds extra dependency.
+    classpath sourceSets.main.runtimeClasspath.collect { it.path }
+    main = 'javah4x.Javah4x'
+    args(['rust', './wasmtime-jni/src'] + targets)
     // Manually compare the source (class files) and output (rust sources) to run this task only when any
     // update is made on classes.
     outputs.upToDateWhen {
