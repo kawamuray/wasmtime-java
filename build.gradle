@@ -31,7 +31,6 @@ compileJava {
 }
 
 test {
-    enabled=false
     testLogging {
         exceptionFormat "full"
     }
