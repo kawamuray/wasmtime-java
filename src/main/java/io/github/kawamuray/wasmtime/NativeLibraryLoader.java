@@ -82,6 +82,7 @@ final class NativeLibraryLoader {
     private enum Platform {
         LINUX("linux", ".so"),
         MACOS("macos", ".dylib"),
+        WINDOWS("windows", ".dll")
         ;
 
         final String classifier;
@@ -95,6 +96,9 @@ final class NativeLibraryLoader {
         }
         if (os.contains("mac os") || os.contains("darwin")) {
             return Platform.MACOS;
+        }
+        if (os.toLowerCase().contains("windows")) {
+            return Platform.WINDOWS;
         }
         throw new RuntimeException("platform not supported: " + os);
     }
