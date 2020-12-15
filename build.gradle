@@ -86,6 +86,7 @@ task unzipJavah4x(type: Copy) {
 
 task generateJniInterfaces(type:JavaExec) {
     doFirst { println System.properties }
+    doLast { println "TEST CLASSPATH"; configurations.testRuntime.each { println it } }
 
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',

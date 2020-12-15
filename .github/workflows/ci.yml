@@ -25,7 +25,7 @@ jobs:
         override: true
         components: rustfmt
     - name: Build with Gradle
-      run: ./gradlew --debug build copyJniLib
+      run: ./gradlew build copyJniLib
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v2
