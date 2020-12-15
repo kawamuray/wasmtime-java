@@ -85,6 +85,8 @@ task unzipJavah4x(type: Copy) {
 }
 
 task generateJniInterfaces(type:JavaExec) {
+    doFirst { println System.properties }
+
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
