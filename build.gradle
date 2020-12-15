@@ -31,9 +31,6 @@ compileJava {
 }
 
 test {
-    if(System.getProperty("os.name").toLowerCase().contains("windows")){
-        enabled = false
-    }
     testLogging {
         exceptionFormat "full"
     }
@@ -60,6 +57,7 @@ processResources {
     }
     from(new File(project.buildDir, "jni-libs")) {
         include "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
+        include "wasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
     }
 }
 
@@ -154,7 +152,7 @@ task copyJniLib(type: Copy) {
         from "wasmtime-jni/target/release"
     }   
     include '*.so', '*.dylib', "*.dll"
-    rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
+    rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
 }
 
@@ -164,6 +162,7 @@ task universalJar(type: Jar) {
     from(zipTree(jar.outputs.files.singleFile)) {
         // We use libs gathered from different OS build environments so don't use one built in this build.
         exclude "libwasmtime_jni_*"
+        exclude "wasmtime_jni_*"
     }
     from new File(project.buildDir, "jni-libs")
 }
