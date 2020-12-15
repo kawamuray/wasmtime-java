@@ -137,6 +137,10 @@ task copyJniLib(type: Copy) {
     rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
     doFirst {
+        println "FILES in targets:"
+        new File("./wasmtime-jni/target/release").eachFileRecurse(groovy.io.FileType.FILES) { println it }
+    }
+    doLast {
         println "FILES in jni-libs:"
         fileTree(new File(project.buildDir, "jni-libs")).each { println it }
     }
