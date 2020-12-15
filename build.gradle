@@ -58,6 +58,7 @@ processResources {
     }
     from(new File(project.buildDir, "jni-libs")) {
         include "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
+        include "wasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
     }
 }
 
@@ -152,6 +153,7 @@ task universalJar(type: Jar) {
     from(zipTree(jar.outputs.files.singleFile)) {
         // We use libs gathered from different OS build environments so don't use one built in this build.
         exclude "libwasmtime_jni_*"
+        exclude "wasmtime_jni_*"
     }
     from new File(project.buildDir, "jni-libs")
 }
