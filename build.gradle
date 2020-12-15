@@ -134,7 +134,7 @@ task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
     from "wasmtime-jni/target/release"
     include '*.so', '*.dylib', '*.dll'
-    rename "^libwasmtime_jni", "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}"
+    rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
     doFirst {
         println "FILES in targets:"
