@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 import java.util.Properties;
 
 import lombok.AllArgsConstructor;
@@ -97,7 +98,7 @@ final class NativeLibraryLoader {
         if (os.contains("mac os") || os.contains("darwin")) {
             return Platform.MACOS;
         }
-        if(os.contains("windows") || os.contains("Windows")){
+        if(os.toLowerCase().contains("windows")){
             return Platform.WINDOWS;
         }
         throw new RuntimeException("platform not supported: " + os);
