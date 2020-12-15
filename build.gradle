@@ -45,7 +45,7 @@ static def jniLibOsClassifier() {
     if (os.contains("mac os") || os.contains("darwin")) {
         return "macos"
     }
-    if (os.toLowerCase().contains("windows") {
+    if (os.toLowerCase().contains("windows")) {
         return "windows"
     }
     throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
