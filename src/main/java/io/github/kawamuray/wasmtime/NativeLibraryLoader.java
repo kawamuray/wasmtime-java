@@ -66,17 +66,7 @@ final class NativeLibraryLoader {
         String fileName = platform.prefix + NATIVE_LIBRARY_NAME + '_' + version + '_' + platform.classifier;
         Path tempFile = Files.createTempFile(fileName, ext);
         try (InputStream in = NativeLibraryLoader.class.getResourceAsStream('/' + fileName + ext)) {
-            //Maybe it will be null if it's called from junit tests in some IDEs
-            if(in == null){
-                if(new File("./build/jni-libs").exists()){
-                    //Load from build dir
-                    try(InputStream developIn = new FileInputStream("./build/jni-libs/"+ fileName + ext)){
-                        Files.copy(developIn, tempFile, StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }
-            } else {
-                Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
-            }
+            Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
         }
         return tempFile.toString();
     }
@@ -84,18 +74,6 @@ final class NativeLibraryLoader {
     private static String libVersion() throws IOException {
         final Properties props;
         try (InputStream in = NativeLibraryLoader.class.getResourceAsStream( '/' + META_PROPS_FILE)) {
-            if(in == null){
-                //In develop mode?
-                if(new File("./build/tmp").exists()){
-                    //We cannot find it from resources when it is called by junit tests from some IDEs
-                    //So we try to find it from build dir
-                    try(InputStream developIn = new FileInputStream(new File("./build/tmp/wasmtime-java-meta.properties"))){
-                        props = new Properties();
-                        props.load(developIn);
-                        return props.getProperty(JNI_LIB_VERSION_PROP);
-                    }
-                }
-            }
             props = new Properties();
             props.load(in);
         }

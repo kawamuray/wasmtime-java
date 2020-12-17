@@ -30,6 +30,10 @@ compileJava {
     options.compilerArgs << '-parameters'
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 test {
     testLogging {
         exceptionFormat "full"
@@ -123,21 +127,13 @@ task generateJniInterfaces(type:JavaExec) {
 
 task buildJniLib(type:Exec) {
     dependsOn 'generateJniInterfaces'
-    if(jniLibOsClassifier().equals("windows")){
-        workingDir '.\\wasmtime-jni'
-    }else{
-        workingDir './wasmtime-jni'
-    }
+    workingDir './wasmtime-jni'
     commandLine 'cargo', 'build', '--release'
 }
 
 task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
-    if(jniLibOsClassifier().equals("windows")){
-        from "wasmtime-jni\\target\\release"
-    }else{
-        from "wasmtime-jni/target/release"
-    }
+    from "wasmtime-jni/target/release"
     include '*.so', '*.dylib', "*.dll"
     rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
