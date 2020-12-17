@@ -1,10 +1,13 @@
 package io.github.kawamuray.wasmtime;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 import java.util.Properties;
 
 import lombok.AllArgsConstructor;
@@ -57,11 +60,10 @@ final class NativeLibraryLoader {
     }
 
     private static String libraryPath() throws IOException {
-        String libName = "lib" + NATIVE_LIBRARY_NAME;
-        String version = libVersion();
         Platform platform = detectPlatform();
+        String version = libVersion();
         String ext = platform.ext;
-        String fileName = libName + '_' + version + '_' + platform.classifier;
+        String fileName = platform.prefix + NATIVE_LIBRARY_NAME + '_' + version + '_' + platform.classifier;
         Path tempFile = Files.createTempFile(fileName, ext);
         try (InputStream in = NativeLibraryLoader.class.getResourceAsStream('/' + fileName + ext)) {
             Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
@@ -80,11 +82,13 @@ final class NativeLibraryLoader {
 
     @AllArgsConstructor
     private enum Platform {
-        LINUX("linux", ".so"),
-        MACOS("macos", ".dylib"),
+        LINUX("linux","lib" , ".so"),
+        MACOS("macos","lib", ".dylib"),
+        WINDOWS("windows","",".dll")
         ;
 
         final String classifier;
+        final String prefix;
         final String ext;
     }
 
@@ -95,6 +99,9 @@ final class NativeLibraryLoader {
         }
         if (os.contains("mac os") || os.contains("darwin")) {
             return Platform.MACOS;
+        }
+        if(os.toLowerCase().contains("windows")){
+            return Platform.WINDOWS;
         }
         throw new RuntimeException("platform not supported: " + os);
     }
