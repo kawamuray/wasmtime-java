@@ -19,6 +19,14 @@ dependencies {
 }
 ```
 
+An artifact (JAR) of `wasmtime-java` ships along with prebuilt JNI libraries for some major platforms, so just adding the above dependency provides you a self-contained `wasmtime` runtime on supported platforms:
+
+| OS          | Arch   |
+| ----        | ----   |
+| Linux (ELF) | x86_64 |
+| Mac OS      | x86_64 |
+| Windows     | x86_64 |
+
 # Example
 
 See [examples](./examples) for the full example.
