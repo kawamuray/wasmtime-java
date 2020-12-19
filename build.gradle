@@ -97,7 +97,8 @@ task generateJniInterfaces(type:JavaExec) {
             'io.github.kawamuray.wasmtime.Memory',
             'io.github.kawamuray.wasmtime.Module',
             'io.github.kawamuray.wasmtime.Store',
-            'io.github.kawamuray.wasmtime.wasi.Wasi']
+            'io.github.kawamuray.wasmtime.wasi.Wasi',
+            'io.github.kawamuray.wasmtime.Config']
     dependsOn 'unzipJavah4x', 'compileJava'
     // JNI shared object isn't available at this stage
     environment 'WASMTIME_JNI_LOAD_DISABLED', '1'

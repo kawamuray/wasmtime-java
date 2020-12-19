@@ -2,6 +2,7 @@ package io.github.kawamuray.wasmtime;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;

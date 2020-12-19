@@ -17,8 +17,11 @@ mod io_github_kawamuray_wasmtime_Module;
 mod io_github_kawamuray_wasmtime_Store;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_wasi_Wasi;
+#[allow(non_snake_case)]
+mod io_github_kawamuray_wasmtime_Config;
 pub(crate) mod utils;
 mod wasi_config;
 mod wextern;
 mod wtrap;
 mod wval;
+
