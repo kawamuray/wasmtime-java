@@ -8,4 +8,10 @@ public class ConfigTest {
         Config config = new Config();
         assert config.innerPtr()!=0;
     }
+    @Test
+    public void testCacheConfigLoadDefault(){
+        Config config = new Config();
+        assert config.innerPtr()!=0;
+        config.cacheConfigLoadDefault();
+    }
 }

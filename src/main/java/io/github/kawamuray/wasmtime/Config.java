@@ -3,6 +3,9 @@ package io.github.kawamuray.wasmtime;
 import java.nio.file.Path;
 
 public class Config {
+    static {
+        NativeLibraryLoader.init();
+    }
     private final long innerPtr;
 
     public Config() {

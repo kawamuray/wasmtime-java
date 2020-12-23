@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::interop;
 use crate::io_github_kawamuray_wasmtime_Config::JniConfig;
-use jni::objects::{JClass, JObject, JString};
+use jni::objects::{JClass, JObject, JString, JValue};
 use jni::sys::{jboolean, jlong, jobject};
 use jni::{self, JNIEnv};
 use std::path::Path;
@@ -121,7 +121,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     fn profiler(env: &JNIEnv, this: JObject, profile: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         let ordinal = env
-            .call_method(profile, "ordinal", "(I)V", &[])
+            .call_method(profile, "ordinal", "()I", &[])
             .unwrap()
             .i()
             .unwrap();
@@ -155,11 +155,8 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     }
     fn strategy(env: &JNIEnv, this: JObject, strategy: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let ordinal = env
-            .call_method(strategy, "ordinal", "(I)V", &[])
-            .unwrap()
-            .i()
-            .unwrap();
+        let tmp = env.call_method(strategy, "ordinal", "()I", &[])?;
+        let ordinal = tmp.i()?;
         let strategy: Strategy;
         match ordinal {
             0 => strategy = Strategy::Auto,
