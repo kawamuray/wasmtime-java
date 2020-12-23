@@ -19,8 +19,14 @@ public class Engine implements Disposable {
         this(newEngine());
     }
 
+    public Engine(Config config){
+        this(newEngineWithConfig(config));
+    }
+
     @Override
     public native void dispose();
 
     private static native long newEngine();
+
+    private static native long newEngineWithConfig(Config config);
 }

@@ -26,4 +26,14 @@ impl<'a> JniStore<'a> for JniStoreImpl {
         let engine: Engine = store.engine().clone();
         Ok(interop::into_raw::<Engine>(engine))
     }
+
+    fn new_store_with_engine(
+        _env: &JNIEnv,
+        _clazz: JClass,
+        engine: JObject,
+    ) -> Result<jlong, Self::Error> {
+        let engine = interop::get_inner::<Engine>(&_env, engine)?;
+        let store = Store::new(&engine);
+        Ok(interop::into_raw::<Store>(store))
+    }
 }

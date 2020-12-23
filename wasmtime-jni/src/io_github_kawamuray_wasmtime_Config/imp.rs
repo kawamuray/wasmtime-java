@@ -55,11 +55,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         level: JObject,
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let ordinal = env
-            .call_method(level, "ordinal", "(I)V", &[])
-            .unwrap()
-            .i()
-            .unwrap();
+        let ordinal = env.call_method(level, "ordinal", "()I", &[])?.i()?;
         let optlevel: OptLevel;
         match ordinal {
             0 => optlevel = OptLevel::None,
@@ -114,17 +110,13 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         config.max_wasm_stack(size as usize);
         return Ok(this.into_inner());
     }
-    fn new_config(env: &JNIEnv, clazz: JClass) -> Result<jlong, Self::Error> {
+    fn new_config(_env: &JNIEnv, _clazz: JClass) -> Result<jlong, Self::Error> {
         let config = Config::default();
         return Ok(interop::into_raw::<Config>(config));
     }
     fn profiler(env: &JNIEnv, this: JObject, profile: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let ordinal = env
-            .call_method(profile, "ordinal", "()I", &[])
-            .unwrap()
-            .i()
-            .unwrap();
+        let ordinal = env.call_method(profile, "ordinal", "()I", &[])?.i()?;
         let profiling_strategy: ProfilingStrategy;
         match ordinal {
             0 => profiling_strategy = ProfilingStrategy::None,
@@ -155,8 +147,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     }
     fn strategy(env: &JNIEnv, this: JObject, strategy: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let tmp = env.call_method(strategy, "ordinal", "()I", &[])?;
-        let ordinal = tmp.i()?;
+        let ordinal = env.call_method(strategy, "ordinal", "()I", &[])?.i()?;
         let strategy: Strategy;
         match ordinal {
             0 => strategy = Strategy::Auto,
