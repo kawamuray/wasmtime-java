@@ -22,11 +22,11 @@ impl<'a> JniEngine<'a> for JniEngineImpl {
     }
 
     fn new_engine_with_config(
-        _env: &JNIEnv,
+        env: &JNIEnv,
         _clazz: JClass,
         config: JObject,
     ) -> Result<jlong, Self::Error> {
-        let config = interop::take_inner::<Config>(&_env, config)?;
+        let config = interop::get_inner::<Config>(&env, config)?;
         let engine = Engine::new(&config);
         Ok(interop::into_raw::<Engine>(engine))
     }

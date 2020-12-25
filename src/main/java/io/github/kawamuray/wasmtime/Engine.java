@@ -2,10 +2,12 @@ package io.github.kawamuray.wasmtime;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
+@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Engine implements Disposable {
     static {

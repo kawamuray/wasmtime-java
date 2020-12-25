@@ -28,11 +28,11 @@ impl<'a> JniStore<'a> for JniStoreImpl {
     }
 
     fn new_store_with_engine(
-        _env: &JNIEnv,
+        env: &JNIEnv,
         _clazz: JClass,
         engine: JObject,
     ) -> Result<jlong, Self::Error> {
-        let engine = interop::get_inner::<Engine>(&_env, engine)?;
+        let engine = interop::get_inner::<Engine>(&env, engine)?;
         let store = Store::new(&engine);
         Ok(interop::into_raw::<Store>(store))
     }
