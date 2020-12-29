@@ -225,7 +225,7 @@ public class Config implements Disposable{
     private native Config cacheConfigLoadNative(String path);
 
     public Config cacheConfigLoad(Path path){
-        return cacheConfigLoadNative(path.toFile().getPath());
+        return cacheConfigLoadNative(path.toString());
     }
 
     /// Loads cache configuration from the system default path.
