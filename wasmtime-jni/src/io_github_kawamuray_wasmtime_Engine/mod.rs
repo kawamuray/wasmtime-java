@@ -23,6 +23,11 @@ trait JniEngine<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn new_engine(env: &JNIEnv, clazz: JClass) -> Result<jlong, Self::Error>;
+    fn new_engine_with_config(
+        env: &JNIEnv,
+        clazz: JClass,
+        config: JObject,
+    ) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
@@ -38,6 +43,19 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngine(
     wrap_error!(
         env,
         JniEngineImpl::new_engine(&env, clazz),
+        Default::default()
+    )
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngineWithConfig(
+    env: JNIEnv,
+    clazz: JClass,
+    config: JObject,
+) -> jlong {
+    wrap_error!(
+        env,
+        JniEngineImpl::new_engine_with_config(&env, clazz, config),
         Default::default()
     )
 }

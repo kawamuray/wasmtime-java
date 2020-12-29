@@ -2,7 +2,10 @@ package io.github.kawamuray.wasmtime;
 
 import java.nio.file.Path;
 
-public class Config {
+public class Config implements Disposable{
+    static {
+        NativeLibraryLoader.init();
+    }
     private final long innerPtr;
 
     public Config() {
@@ -219,7 +222,11 @@ public class Config {
     /// pointed to by `path` and attempting to load the cache configuration.
     ///
     /// [docs]: https://bytecodealliance.github.io/wasmtime/cli-cache.html
-    public native Config cacheConfigLoad(Path path);
+    private native Config cacheConfigLoadNative(String path);
+
+    public Config cacheConfigLoad(Path path){
+        return cacheConfigLoadNative(path.toString());
+    }
 
     /// Loads cache configuration from the system default path.
     ///
@@ -399,4 +406,7 @@ public class Config {
     public native Config dynamicMemoryGuardSize(long guardSize);
 
     private static native long newConfig();
+
+    @Override
+    public native void dispose();
 }

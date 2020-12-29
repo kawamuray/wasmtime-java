@@ -1,5 +1,7 @@
 mod errors;
 #[macro_use]
+#[allow(non_snake_case)]
+mod io_github_kawamuray_wasmtime_Config;
 pub(crate) mod interop;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Engine;
@@ -22,3 +24,4 @@ mod wasi_config;
 mod wextern;
 mod wtrap;
 mod wval;
+

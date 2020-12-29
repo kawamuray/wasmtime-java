@@ -20,6 +20,10 @@ public class Store implements Disposable {
         this(newStore());
     }
 
+    public Store(Engine engine){
+        this(newStoreWithEngine(engine));
+    }
+
     public Engine engine() {
         return new Engine(enginePtr());
     }
@@ -28,6 +32,8 @@ public class Store implements Disposable {
     public native void dispose();
 
     private static native long newStore();
+
+    private static native long newStoreWithEngine(Engine engine);
 
     private native long enginePtr();
 }
