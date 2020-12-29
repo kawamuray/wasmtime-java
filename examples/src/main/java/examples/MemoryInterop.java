@@ -1,23 +1,23 @@
 package examples;
 
-import static wasmtime.WasmValType.I32;
-import static wasmtime.WasmValType.I64;
+import static io.github.kawamuray.wasmtime.WasmValType.I32;
+import static io.github.kawamuray.wasmtime.WasmValType.I64;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import wasmtime.Extern;
-import wasmtime.Func;
-import wasmtime.Linker;
-import wasmtime.Memory;
-import wasmtime.Module;
-import wasmtime.Store;
-import wasmtime.WasmFunctions;
-import wasmtime.WasmFunctions.Consumer0;
-import wasmtime.wasi.Wasi;
-import wasmtime.wasi.WasiConfig;
-import wasmtime.wasi.WasiConfig.PreopenDir;
+import io.github.kawamuray.wasmtime.Extern;
+import io.github.kawamuray.wasmtime.Func;
+import io.github.kawamuray.wasmtime.Linker;
+import io.github.kawamuray.wasmtime.Memory;
+import io.github.kawamuray.wasmtime.Module;
+import io.github.kawamuray.wasmtime.Store;
+import io.github.kawamuray.wasmtime.WasmFunctions;
+import io.github.kawamuray.wasmtime.WasmFunctions.Consumer0;
+import io.github.kawamuray.wasmtime.wasi.Wasi;
+import io.github.kawamuray.wasmtime.wasi.WasiConfig;
+import io.github.kawamuray.wasmtime.wasi.WasiConfig.PreopenDir;
 
 public class MemoryInterop {
     // Build it with `cargo wasi build`

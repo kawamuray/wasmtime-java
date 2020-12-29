@@ -49,8 +49,14 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
                     ),
                 }
             }
-            Wasmtime(e) => ("wasmtime/WasmtimeException", e.to_string()),
-            WasiConfig(e) => ("wasmtime/WasmtimeException", e.to_string()),
+            Wasmtime(e) => (
+                "io/github/kawamuray/wasmtime/WasmtimeException",
+                e.to_string(),
+            ),
+            WasiConfig(e) => (
+                "io/github/kawamuray/wasmtime/WasmtimeException",
+                e.to_string(),
+            ),
             Io(_) | UnknownEnum(_) | NotImplemented | LockPoison(_) => {
                 ("java/lang/RuntimeException", self.to_string())
             }

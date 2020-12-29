@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -6,7 +9,7 @@ plugins {
 }
 
 group = 'io.github.kawamuray.wasmtime'
-version = '0.1.0'
+version = '0.2.0'
 
 repositories {
     jcenter()
@@ -17,6 +20,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'org.slf4j:slf4j-api:1.7.25'
     testImplementation 'junit:junit:4.13'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.2.3'
 }
 
 java {
@@ -30,9 +34,22 @@ compileJava {
     options.compilerArgs << '-parameters'
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 test {
     testLogging {
-        exceptionFormat "full"
+        // set options for log level LIFECYCLE
+        events TestLogEvent.FAILED,
+               TestLogEvent.PASSED,
+               TestLogEvent.SKIPPED,
+               TestLogEvent.STANDARD_OUT
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        showStandardStreams false
     }
 }
 
@@ -84,7 +101,7 @@ task unzipJavah4x(type: Copy) {
     into new File(project.buildDir, "tmp")
 }
 
-task generateJniInterfaces(type:Exec) { //LR problem
+task generateJniInterfaces(type:JavaExec) {
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
@@ -93,64 +110,44 @@ task generateJniInterfaces(type:Exec) { //LR problem
             'io.github.kawamuray.wasmtime.Memory',
             'io.github.kawamuray.wasmtime.Module',
             'io.github.kawamuray.wasmtime.Store',
-            'io.github.kawamuray.wasmtime.wasi.Wasi']
+            'io.github.kawamuray.wasmtime.wasi.Wasi',
+            'io.github.kawamuray.wasmtime.Config']
     dependsOn 'unzipJavah4x', 'compileJava'
-    environment 'CLASSPATH', sourceSets.main.runtimeClasspath.collect { it.path }.join(':')
     // JNI shared object isn't available at this stage
     environment 'WASMTIME_JNI_LOAD_DISABLED', '1'
-    if(jniLibOsClassifier().equals("windows")){
-        commandLine([/*"cmd",*/"java -cp ${project.buildDir}\\tmp;" +
-                "${project.buildDir}\\tmp\\javah4x;" +
-                "${project.buildDir}\\tmp\\javah4x\\rust;" +
-                "${project.buildDir}\\classes\\java\\main\\io\\github\\kawamuray\\wasmtime;" +
-                "${project.buildDir}\\classes\\java\\main\\io\\github\\kawamuray\\wasmtime\\wasi" +
-                " javah4x.Javah4x", 'rust', '.\\wasmtime-jni\\src'] + targets)
-        // Manually compare the source (class files) and output (rust sources) to run this task only when any
-        // update is made on classes.
-        outputs.upToDateWhen {
-            def smallestGeneratedTimestamp = targets.collect {
-                new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
-            }.min()
-            def largestSourceTimestamp = targets.collect {
-                def path = "classes/java/main/" + it.replace(".", "/") + ".class"
-                new File(project.buildDir, path).lastModified()
-            }.max()
-            smallestGeneratedTimestamp >= largestSourceTimestamp
-        }
-    }else{
-        commandLine(["${project.buildDir}/tmp/javah4x-${javah4xVersion}", 'rust', './wasmtime-jni/src'] + targets)
-        // Manually compare the source (class files) and output (rust sources) to run this task only when any
-        // update is made on classes.
-        outputs.upToDateWhen {
-            def smallestGeneratedTimestamp = targets.collect {
-                new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
-            }.min()
-            def largestSourceTimestamp = targets.collect {
-                def path = "classes/java/main/" + it.replace(".", "/") + ".class"
-                new File(project.buildDir, path).lastModified()
-            }.max()
-            smallestGeneratedTimestamp >= largestSourceTimestamp
-        }
+    // The downloaded executable is actually a shell script followed by JAR content.
+    // Avoid executing it as a binary and use it as a JAR in classpath to make it work not only on Unix platform
+    // but also on Windows.
+    classpath "${project.buildDir}/tmp/javah4x-${javah4xVersion}"
+    // Giving `sourceSets.main.runtimeClasspath` directly causes implicit dependency for `classes` task to be
+    // added from this task, causing cyclic dependency. We only need compiled java classes so converting
+    // existing entries to path and collect so it doesn't adds extra dependency.
+    classpath sourceSets.main.runtimeClasspath.collect { it.path }
+    main = 'javah4x.Javah4x'
+    args(['rust', './wasmtime-jni/src'] + targets)
+    // Manually compare the source (class files) and output (rust sources) to run this task only when any
+    // update is made on classes.
+    outputs.upToDateWhen {
+        def smallestGeneratedTimestamp = targets.collect {
+            new File(project.rootDir, "wasmtime-jni/src/${it.replace(".", "_")}/mod.rs").lastModified()
+        }.min()
+        def largestSourceTimestamp = targets.collect {
+            def path = "classes/java/main/" + it.replace(".", "/") + ".class"
+            new File(project.buildDir, path).lastModified()
+        }.max()
+        smallestGeneratedTimestamp >= largestSourceTimestamp
     }
 }
 
 task buildJniLib(type:Exec) {
     dependsOn 'generateJniInterfaces'
-    if(jniLibOsClassifier().equals("windows")){
-        workingDir '.\\wasmtime-jni'
-    }else{
-        workingDir './wasmtime-jni'
-    }
+    workingDir './wasmtime-jni'
     commandLine 'cargo', 'build', '--release'
 }
 
 task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
-    if(jniLibOsClassifier().equals("windows")){
-        from "wasmtime-jni\\target\\release"
-    }else{
-        from "wasmtime-jni/target/release"
-    }   
+    from "wasmtime-jni/target/release"
     include '*.so', '*.dylib', "*.dll"
     rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")

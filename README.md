@@ -5,11 +5,27 @@ Java (or any JVM) language binding for [Wasmtime](https://github.com/bytecodeall
 
 Some basic examples are working, but many API implementations are work in progress.
 
-# How to build
+# Declaring Dependencies
 
-```sh
-$ ./gradlew build
+Gradle example:
+
+```groovy
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "io.github.kawamuray.wasmtime:wasmtime-java:$LATEST_VERSION"
+}
 ```
+
+An artifact (JAR) of `wasmtime-java` ships along with prebuilt JNI libraries for some major platforms, so just adding the above dependency provides you a self-contained `wasmtime` runtime on supported platforms:
+
+| OS          | Arch   |
+| ----        | ----   |
+| Linux (ELF) | x86_64 |
+| Mac OS      | x86_64 |
+| Windows     | x86_64 |
 
 # Example
 
@@ -40,6 +56,12 @@ public class HelloWasm {
 Run example:
 ```sh
 $ ./gradlew -Pmain=examples.HelloWorld examples:run
+```
+
+# How to build
+
+```sh
+$ ./gradlew build
 ```
 
 # License
