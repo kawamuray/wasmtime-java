@@ -1,7 +1,7 @@
 use crate::errors;
 use crate::interop;
-use crate::utils;
 use crate::io_github_kawamuray_wasmtime_Config::JniConfig;
+use crate::utils;
 use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jboolean, jlong, jobject};
 use jni::{self, JNIEnv};

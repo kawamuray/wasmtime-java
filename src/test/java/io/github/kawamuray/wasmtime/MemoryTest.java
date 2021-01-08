@@ -5,8 +5,11 @@ import static io.github.kawamuray.wasmtime.WasmValType.I32;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -87,7 +90,10 @@ public class MemoryTest {
     @Test
     public void testGrow() {
         try (Memory mem = new Memory(store, new MemoryType(new MemoryType.Limit(1024)))) {
+            long before = mem.size();
             mem.grow(64);
+            long after = mem.size();
+            Assert.assertEquals(before+64,after);
         }
     }
 }
