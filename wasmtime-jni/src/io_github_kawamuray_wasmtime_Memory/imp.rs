@@ -47,4 +47,10 @@ impl<'a> JniMemory<'a> for JniMemoryImpl {
         let mem = interop::get_inner::<Memory>(&env, this)?;
         Ok(mem.size() as jint)
     }
+
+    fn grow(env: &JNIEnv, this: JObject, page: jint) -> Result<jint, Self::Error> {
+        let mem = interop::get_inner::<Memory>(&env, this)?;
+        let re = mem.grow(page as u32)? as i32;
+        Ok(re)
+    }
 }

@@ -83,4 +83,11 @@ public class MemoryTest {
             }
         }
     }
+
+    @Test
+    public void testGrow() {
+        try (Memory mem = new Memory(store, new MemoryType(new MemoryType.Limit(1024)))) {
+            mem.grow(64);
+        }
+    }
 }

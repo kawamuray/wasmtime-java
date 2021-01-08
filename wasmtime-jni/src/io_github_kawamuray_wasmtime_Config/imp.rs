@@ -55,12 +55,12 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         level: JObject,
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let enum_string = utils::enum_name(env,level)?;
+        let enum_string = utils::enum_name(env, level)?;
         let optlevel: OptLevel = match enum_string.as_str() {
             "NONE" => OptLevel::None,
             "SPEED" => OptLevel::Speed,
             "SPEED_AND_SIZE" => OptLevel::SpeedAndSize,
-            _ => OptLevel::Speed
+            _ => OptLevel::Speed,
         };
         config.cranelift_opt_level(optlevel);
         Ok(this.into_inner())
@@ -115,12 +115,12 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     }
     fn profiler(env: &JNIEnv, this: JObject, profile: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let enum_string = utils::enum_name(env,profile)?;
+        let enum_string = utils::enum_name(env, profile)?;
         let profiling_strategy = match enum_string.as_str() {
             "NONE" => ProfilingStrategy::None,
             "JIT_DUMP" => ProfilingStrategy::JitDump,
             "V_TUNE" => ProfilingStrategy::VTune,
-            _ => ProfilingStrategy::None
+            _ => ProfilingStrategy::None,
         };
         config.profiler(profiling_strategy)?;
         Ok(this.into_inner())
@@ -145,12 +145,12 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     }
     fn strategy(env: &JNIEnv, this: JObject, strategy: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        let enum_string = utils::enum_name(env,strategy)?;
+        let enum_string = utils::enum_name(env, strategy)?;
         let strategy: Strategy = match enum_string.as_str() {
             "AUTO" => Strategy::Auto,
             "CRANELIFT" => Strategy::Cranelift,
             "LIGHTBEAM" => Strategy::Lightbeam,
-            _ => Strategy::Auto
+            _ => Strategy::Auto,
         };
         config.strategy(strategy)?;
         Ok(this.into_inner())

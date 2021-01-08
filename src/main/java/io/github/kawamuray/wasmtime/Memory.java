@@ -20,6 +20,8 @@ public class Memory implements Disposable {
 
     public native int size();
 
+    public native int grow(int page);
+
     @Override
     public native void dispose();
 
