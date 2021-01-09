@@ -24,7 +24,7 @@ trait JniMemory<'a> {
     fn buffer(env: &JNIEnv, this: JObject) -> Result<jobject, Self::Error>;
     fn data_size(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn grow(env: &JNIEnv, this: JObject, page: jint) -> Result<jint, Self::Error>;
+    fn grow(env: &JNIEnv, this: JObject, delta_pages: jint) -> Result<jint, Self::Error>;
     fn new_memory(
         env: &JNIEnv,
         clazz: JClass,
@@ -68,11 +68,11 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_dispose(env: JNIEnv,
 extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_grow(
     env: JNIEnv,
     this: JObject,
-    page: jint,
+    delta_pages: jint,
 ) -> jint {
     wrap_error!(
         env,
-        JniMemoryImpl::grow(&env, this, page),
+        JniMemoryImpl::grow(&env, this, delta_pages),
         Default::default()
     )
 }

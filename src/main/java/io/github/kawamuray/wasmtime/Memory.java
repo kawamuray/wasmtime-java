@@ -20,7 +20,7 @@ public class Memory implements Disposable {
 
     public native int size();
 
-    public native int grow(int page);
+    public native int grow(int delta_pages);
 
     @Override
     public native void dispose();

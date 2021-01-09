@@ -5,8 +5,6 @@ import static io.github.kawamuray.wasmtime.WasmValType.I32;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.Assert;
