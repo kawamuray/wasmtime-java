@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,6 +82,16 @@ public class MemoryTest {
                 buf.put(0x1234 + 1, (byte) 10);
                 assertEquals(10, load.call(0x1234 + 1).intValue());
             }
+        }
+    }
+
+    @Test
+    public void testGrow() {
+        try (Memory mem = new Memory(store, new MemoryType(new MemoryType.Limit(1024)))) {
+            long before = mem.size();
+            mem.grow(64);
+            long after = mem.size();
+            Assert.assertEquals(before+64,after);
         }
     }
 }
