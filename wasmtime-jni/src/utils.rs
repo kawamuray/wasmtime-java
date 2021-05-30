@@ -14,6 +14,19 @@ pub fn get_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Strin
     get_string(env, s)
 }
 
+/// Shorthand of obtaining and turning `JObject` from a field into a Rust `Option<String>`.
+pub fn get_optional_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Option<String>> {
+    let optional = env.get_field(obj, field, "Ljava/util/Optional;")?.l()?;
+    let is_present = env.call_method(optional, "isPresent", "()Z", &[])?.z()?;
+    if is_present {
+        let s = env.call_method(optional, "get", "()Ljava/lang/Object;", &[])?.l()?;
+        Ok(Some(get_string(env, s)?))
+    } else {
+        Ok(None)
+    }
+}
+
+
 /// Convert a Vec of JObjects into jobjectArray.
 pub fn into_java_array(env: &JNIEnv, clazz: &str, vec: Vec<JObject>) -> Result<jobjectArray> {
     let array = env.new_object_array(vec.len() as jint, clazz, JObject::null())?;

@@ -3,6 +3,7 @@ use crate::utils;
 use jni::objects::JObject;
 use jni::JNIEnv;
 use std::fs::File;
+use std::convert::TryFrom;
 use wasmtime_wasi::{WasiCtx, WasiCtxBuilder};
 
 fn preopen_dir(path: &str) -> Result<File> {
@@ -34,6 +35,17 @@ pub fn ctx_from_java(env: &JNIEnv, obj: JObject) -> Result<WasiCtx> {
         let guest_path = utils::get_string_field(env, obj, "guestPath")?;
         let dir = preopen_dir(&host_path)?;
         builder.preopened_dir(dir, &guest_path);
+    }
+
+    if let Some(file) = utils::get_optional_string_field(env, obj, "stdoutFile")? {
+        let file = File::create(file)?;
+        let file = wasi_common::OsFile::try_from(file)?;
+        builder.stdout(file);
+    }
+    if let Some(file) = utils::get_optional_string_field(env, obj, "stderrFile")? {
+        let file = File::create(file)?;
+        let file = wasi_common::OsFile::try_from(file)?;
+        builder.stderr(file);
     }
     Ok(builder.build()?)
 }
