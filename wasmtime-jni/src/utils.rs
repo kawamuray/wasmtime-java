@@ -15,11 +15,9 @@ pub fn get_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Strin
 }
 
 /// Shorthand of obtaining and turning `JObject` from a field into a Rust `Option<String>`.
-pub fn get_optional_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Option<String>> {
-    let optional = env.get_field(obj, field, "Ljava/util/Optional;")?.l()?;
-    let is_present = env.call_method(optional, "isPresent", "()Z", &[])?.z()?;
-    if is_present {
-        let s = env.call_method(optional, "get", "()Ljava/lang/Object;", &[])?.l()?;
+pub fn get_nullable_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Option<String>> {
+    let s = env.get_field(obj, field, "Ljava/lang/String;")?.l()?;
+    if !s.is_null() {
         Ok(Some(get_string(env, s)?))
     } else {
         Ok(None)

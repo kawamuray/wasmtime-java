@@ -10,8 +10,8 @@ import java.util.Optional;
 public class WasiConfig {
     private final String[] args;
     private final PreopenDir[] preopenDirs;
-    private final Optional<String> stdoutFile;
-    private final Optional<String> stderrFile;
+    private final String stdoutFile;
+    private final String stderrFile;
 
     @Value
     public static class PreopenDir {
@@ -22,12 +22,12 @@ public class WasiConfig {
     public WasiConfig(String[] args, PreopenDir[] preopenDirs) {
         this.args = args;
         this.preopenDirs = preopenDirs;
-        this.stdoutFile = Optional.empty();
-        this.stderrFile = Optional.empty();
+        this.stdoutFile = null;
+        this.stderrFile = null;
     }
 
     public WasiConfig(String[] args, PreopenDir[] preopenDirs,
-                      Optional<String> stdoutFile, Optional<String> stderrFile) {
+                      String stdoutFile, String stderrFile) {
         this.args = args;
         this.preopenDirs = preopenDirs;
         this.stdoutFile = stdoutFile;

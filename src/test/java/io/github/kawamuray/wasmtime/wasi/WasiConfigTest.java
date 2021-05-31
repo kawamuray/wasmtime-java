@@ -28,7 +28,7 @@ public class WasiConfigTest {
         File f = File.createTempFile("wasmtime-jni-wasi-config", "");
         WasiConfig config = new WasiConfig(
             new String[0], new WasiConfig.PreopenDir[0],
-            Optional.of(f.getPath()), Optional.of(f.getPath())
+            f.getPath(), f.getPath()
         );
         try (Store store = new Store();
             Wasi wasi = new Wasi(store, config)

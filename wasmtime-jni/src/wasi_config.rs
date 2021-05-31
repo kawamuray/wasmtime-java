@@ -37,12 +37,12 @@ pub fn ctx_from_java(env: &JNIEnv, obj: JObject) -> Result<WasiCtx> {
         builder.preopened_dir(dir, &guest_path);
     }
 
-    if let Some(file) = utils::get_optional_string_field(env, obj, "stdoutFile")? {
+    if let Some(file) = utils::get_nullable_string_field(env, obj, "stdoutFile")? {
         let file = File::create(file)?;
         let file = wasi_common::OsFile::try_from(file)?;
         builder.stdout(file);
     }
-    if let Some(file) = utils::get_optional_string_field(env, obj, "stderrFile")? {
+    if let Some(file) = utils::get_nullable_string_field(env, obj, "stderrFile")? {
         let file = File::create(file)?;
         let file = wasi_common::OsFile::try_from(file)?;
         builder.stderr(file);
