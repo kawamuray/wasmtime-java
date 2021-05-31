@@ -3,7 +3,6 @@ package io.github.kawamuray.wasmtime.wasi;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
-import java.util.Optional;
 
 @Accessors(fluent = true)
 @Builder
@@ -20,10 +19,7 @@ public class WasiConfig {
     }
 
     public WasiConfig(String[] args, PreopenDir[] preopenDirs) {
-        this.args = args;
-        this.preopenDirs = preopenDirs;
-        this.stdoutFile = null;
-        this.stderrFile = null;
+        this(args, preopenDirs, null, null);
     }
 
     public WasiConfig(String[] args, PreopenDir[] preopenDirs,

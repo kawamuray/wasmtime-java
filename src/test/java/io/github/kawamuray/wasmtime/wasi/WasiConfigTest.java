@@ -1,8 +1,6 @@
 package io.github.kawamuray.wasmtime.wasi;
 import io.github.kawamuray.wasmtime.Store;
-import org.junit.Assert;
 import org.junit.Test;
-import java.util.Optional;
 import java.io.File;
 import java.io.IOException;
 
