@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
+import io.github.kawamuray.wasmtime.wasi.Wasi;
+import io.github.kawamuray.wasmtime.wasi.WasiConfig;
 import org.junit.Test;
 
 import io.github.kawamuray.wasmtime.Val.Type;
@@ -25,6 +27,13 @@ public class FuncTest {
                                                         + "    local.get $p2"
                                                         + "    call $callback)"
                                                         + ')').getBytes();
+    private static final byte[] WAT_BYTES_WASI_EXIT = ("(module"
+                                                       + "(func $__wasi_proc_exit (import \"wasi_snapshot_preview1\" \"proc_exit\") (param i32))"
+                                                       + "(memory (export \"memory\") 0)"
+                                                       + "(func (export \"_start\")"
+                                                       + "    i32.const 42"
+                                                       + "    call $__wasi_proc_exit)"
+                                                       + ")").getBytes();
 
     @Test
     public void testCall() {
@@ -60,7 +69,7 @@ public class FuncTest {
         }
     }
 
-    @Test(expected = WasmtimeException.class)
+    @Test(expected = Trap.class)
     public void testTrampolineTrap() {
         FuncType fnType = new FuncType(new Type[] { Type.I64, Type.I64 }, new Type[] { Type.I64 });
         try (Store store = new Store();
@@ -75,7 +84,7 @@ public class FuncTest {
         }
     }
 
-    @Test(expected = WasmtimeException.class)
+    @Test(expected = Trap.class)
     public void testTrampolineException() {
         FuncType fnType = new FuncType(new Type[] { Type.I64, Type.I64 }, new Type[] { Type.I64 });
         try (Store store = new Store();
@@ -101,5 +110,23 @@ public class FuncTest {
             }
         }
         assertEquals(0, Func.registry.map.size());
+    }
+
+    @Test
+    public void testWasiExitTrap() {
+        try (Store store = new Store();
+             Linker linker = new Linker(store);
+             Wasi wasi = new Wasi(store, new WasiConfig(new String[0], new WasiConfig.PreopenDir[0]));
+             Engine engine = store.engine();
+             Module module = new Module(engine, WAT_BYTES_WASI_EXIT)) {
+            wasi.addToLinker(linker);
+            linker.module("", module);
+            try (Func func = linker.getOneByName("", "_start").func()) {
+                func.call();
+            } catch (Trap trap) {
+                assertEquals(trap.type(), Trap.Type.I32_EXIT);
+                assertEquals(trap.exitCode(), 42);
+            }
+        }
     }
 }

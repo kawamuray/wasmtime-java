@@ -36,11 +36,11 @@ public class Func implements Disposable {
         return newFunc(store.innerPtr(), fnType, index);
     }
 
-    public Val[] call(Val... args) {
+    public Val[] call(Val... args) throws Trap {
         return nativeCall(args);
     }
 
-    public List<Val> call(Collection<Val> args) {
+    public List<Val> call(Collection<Val> args) throws Trap {
         return Arrays.asList(call(args.toArray(EMPTY_VALS)));
     }
 
@@ -71,5 +71,5 @@ public class Func implements Disposable {
 
     private static native long newFunc(long storePtr, FuncType fnType, int index);
 
-    private native Val[] nativeCall(Val[] args);
+    private native Val[] nativeCall(Val[] args) throws Trap;
 }

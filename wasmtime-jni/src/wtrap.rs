@@ -21,3 +21,26 @@ pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Trap> {
         _ => return Err(Error::UnknownEnum(name)),
     })
 }
+
+pub fn into_java<'a>(env: &JNIEnv<'a>, trap: &Trap) -> jni::errors::Result<JObject<'a>> {
+    if let Some(status) = trap.i32_exit_status() {
+        Ok(env
+            .call_static_method(
+                "io/github/kawamuray/wasmtime/Trap",
+                "fromExitCode",
+                "(I)Lio/github/kawamuray/wasmtime/Trap;",
+                &[status.into()],
+            )?
+            .l()?)
+    } else {
+        let jmsg = env.new_string(trap.to_string())?;
+        Ok(env
+            .call_static_method(
+                "io/github/kawamuray/wasmtime/Trap",
+                "fromMessage",
+                "(Ljava/lang/String;)Lio/github/kawamuray/wasmtime/Trap;",
+                &[jmsg.into()],
+            )?
+            .l()?)
+    }
+}

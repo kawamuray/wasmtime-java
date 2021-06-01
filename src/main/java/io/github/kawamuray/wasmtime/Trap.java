@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
 @AllArgsConstructor
-public class Trap {
+public class Trap extends RuntimeException {
     public enum Type {
         MESSAGE,
         I32_EXIT,
@@ -24,5 +24,12 @@ public class Trap {
 
     public static Trap fromException(Throwable e) {
         return fromMessage(String.valueOf(e));
+    }
+
+    public Type type() {
+        return this.type;
+    }
+    public int exitCode() {
+        return this.exitCode;
     }
 }

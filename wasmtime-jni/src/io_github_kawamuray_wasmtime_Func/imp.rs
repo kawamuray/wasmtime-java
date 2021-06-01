@@ -75,8 +75,15 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
             wasm_params.push(wasm_val);
         }
 
-        // TODO: it might be better to convert the error into a dedicated exception for Trap
-        let results = func.call(&wasm_params)?;
+        let results = match func.call(&wasm_params) {
+            Ok(results) => results,
+            Err(e) => {
+                return Err(match e.downcast::<Trap>() {
+                    Ok(trap) => errors::Error::WasmTrap(trap),
+                    Err(e) => e.into(),
+                });
+            }
+        };
 
         let java_results = results
             .into_iter()

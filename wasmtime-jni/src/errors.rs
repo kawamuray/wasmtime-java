@@ -5,6 +5,7 @@ use jni::{self, JNIEnv};
 use std::io;
 use thiserror::Error;
 use wasi_common::WasiCtxBuilderError;
+use crate::wtrap;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -14,6 +15,8 @@ pub enum Error {
     Jni(#[from] jni::errors::Error),
     #[error("Wasmtime error: {0}")]
     Wasmtime(#[from] anyhow::Error),
+    #[error("aborted instruction execution: {0}")]
+    WasmTrap(#[from] wasmtime::Trap),
     #[error("unknown enum variant: {0}")]
     UnknownEnum(String),
     #[error("not implemented")]
@@ -53,6 +56,10 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
                 "io/github/kawamuray/wasmtime/WasmtimeException",
                 e.to_string(),
             ),
+            WasmTrap(trap) => {
+                let jtrap = wtrap::into_java(env, trap)?;
+                return Ok(jtrap.into());
+            }
             WasiConfig(e) => (
                 "io/github/kawamuray/wasmtime/WasmtimeException",
                 e.to_string(),
