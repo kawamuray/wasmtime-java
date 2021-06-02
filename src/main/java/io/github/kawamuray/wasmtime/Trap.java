@@ -1,18 +1,23 @@
 package io.github.kawamuray.wasmtime;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.Accessors;
 
+@Value
+@Accessors(fluent = true)
 @AllArgsConstructor
-public class Trap extends RuntimeException {
+public class Trap {
     public enum Type {
         MESSAGE,
         I32_EXIT,
     }
 
-    private final Type type;
-    private final String message;
-    private final int exitCode;
+    Type type;
+    String message;
+    int exitCode;
 
     public static Trap fromMessage(@NonNull String message) {
         return new Trap(Type.MESSAGE, message, 0);
@@ -24,12 +29,5 @@ public class Trap extends RuntimeException {
 
     public static Trap fromException(Throwable e) {
         return fromMessage(String.valueOf(e));
-    }
-
-    public Type type() {
-        return this.type;
-    }
-    public int exitCode() {
-        return this.exitCode;
     }
 }

@@ -69,7 +69,7 @@ public class FuncTest {
         }
     }
 
-    @Test(expected = Trap.class)
+    @Test(expected = TrapException.class)
     public void testTrampolineTrap() {
         FuncType fnType = new FuncType(new Type[] { Type.I64, Type.I64 }, new Type[] { Type.I64 });
         try (Store store = new Store();
@@ -84,7 +84,7 @@ public class FuncTest {
         }
     }
 
-    @Test(expected = Trap.class)
+    @Test(expected = TrapException.class)
     public void testTrampolineException() {
         FuncType fnType = new FuncType(new Type[] { Type.I64, Type.I64 }, new Type[] { Type.I64 });
         try (Store store = new Store();
@@ -123,7 +123,8 @@ public class FuncTest {
             linker.module("", module);
             try (Func func = linker.getOneByName("", "_start").func()) {
                 func.call();
-            } catch (Trap trap) {
+            } catch (TrapException e) {
+                Trap trap = e.trap();
                 assertEquals(trap.type(), Trap.Type.I32_EXIT);
                 assertEquals(trap.exitCode(), 42);
             }

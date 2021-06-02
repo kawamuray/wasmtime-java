@@ -1,3 +1,4 @@
+use crate::wtrap;
 use anyhow;
 use jni::descriptors::Desc;
 use jni::objects::JThrowable;
@@ -5,7 +6,6 @@ use jni::{self, JNIEnv};
 use std::io;
 use thiserror::Error;
 use wasi_common::WasiCtxBuilderError;
-use crate::wtrap;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -58,7 +58,12 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
             ),
             WasmTrap(trap) => {
                 let jtrap = wtrap::into_java(env, trap)?;
-                return Ok(jtrap.into());
+                let jtrap_ex = env.new_object(
+                    "io/github/kawamuray/wasmtime/TrapException",
+                    "(Lio/github/kawamuray/wasmtime/Trap;)V",
+                    &[jtrap.into()],
+                )?;
+                return Ok(jtrap_ex.into());
             }
             WasiConfig(e) => (
                 "io/github/kawamuray/wasmtime/WasmtimeException",
