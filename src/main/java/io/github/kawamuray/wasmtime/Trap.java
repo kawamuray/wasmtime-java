@@ -2,7 +2,11 @@ package io.github.kawamuray.wasmtime;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.Accessors;
 
+@Value
+@Accessors(fluent = true)
 @AllArgsConstructor
 public class Trap {
     public enum Type {
@@ -10,9 +14,9 @@ public class Trap {
         I32_EXIT,
     }
 
-    private final Type type;
-    private final String message;
-    private final int exitCode;
+    Type type;
+    String message;
+    int exitCode;
 
     public static Trap fromMessage(@NonNull String message) {
         return new Trap(Type.MESSAGE, message, 0);

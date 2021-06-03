@@ -36,10 +36,24 @@ public class Func implements Disposable {
         return newFunc(store.innerPtr(), fnType, index);
     }
 
+    /**
+     * Call this function with given variadic arguments
+     * @param args a collection of argument values passed to the callee function
+     * @return a list of returned values
+     * @throws TrapException if the function throws an exception or exits with WASI API
+     * @throws WasmtimeException if the wasmtime runtime throws an internal exception
+     */
     public Val[] call(Val... args) {
         return nativeCall(args);
     }
 
+    /**
+     * Call this function with a given list of arguments
+     * @param args a collection of argument values passed to the callee function
+     * @return a list of returned values
+     * @throws TrapException if the function throws an exception or exits with WASI API
+     * @throws WasmtimeException if the wasmtime runtime throws an internal exception
+     */
     public List<Val> call(Collection<Val> args) {
         return Arrays.asList(call(args.toArray(EMPTY_VALS)));
     }
