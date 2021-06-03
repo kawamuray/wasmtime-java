@@ -1,7 +1,6 @@
 package io.github.kawamuray.wasmtime;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
