@@ -145,12 +145,22 @@ task buildJniLib(type:Exec) {
     commandLine 'cargo', 'build', '--release'
 }
 
+task copyMetaProperties(type: Copy){
+    dependsOn 'buildJniLib'
+    from 'build/tmp'
+    include '*.properties'
+    into new File("./src/test/resources")
+
+}
+
 task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
+    dependsOn 'copyMetaProperties'
     from "wasmtime-jni/target/release"
     include '*.so', '*.dylib', "*.dll"
     rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
+    into new File("./src/test/resources")
 }
 
 task universalJar(type: Jar) {
