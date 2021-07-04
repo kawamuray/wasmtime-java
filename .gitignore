@@ -4,3 +4,5 @@ build
 # IntelliJ IDEA
 .idea/*
 !.idea/copyright
+# JUnit Test
+src/test/resources
