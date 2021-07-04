@@ -14,6 +14,17 @@ pub fn get_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Strin
     get_string(env, s)
 }
 
+/// Shorthand of obtaining and turning `JObject` from a field into a Rust `Option<String>`.
+pub fn get_nullable_string_field(env: &JNIEnv, obj: JObject, field: &str) -> Result<Option<String>> {
+    let s = env.get_field(obj, field, "Ljava/lang/String;")?.l()?;
+    if !s.is_null() {
+        Ok(Some(get_string(env, s)?))
+    } else {
+        Ok(None)
+    }
+}
+
+
 /// Convert a Vec of JObjects into jobjectArray.
 pub fn into_java_array(env: &JNIEnv, clazz: &str, vec: Vec<JObject>) -> Result<jobjectArray> {
     let array = env.new_object_array(vec.len() as jint, clazz, JObject::null())?;

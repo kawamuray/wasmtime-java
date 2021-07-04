@@ -1,3 +1,4 @@
+use crate::wtrap;
 use anyhow;
 use jni::descriptors::Desc;
 use jni::objects::JThrowable;
@@ -14,6 +15,8 @@ pub enum Error {
     Jni(#[from] jni::errors::Error),
     #[error("Wasmtime error: {0}")]
     Wasmtime(#[from] anyhow::Error),
+    #[error("aborted instruction execution: {0}")]
+    WasmTrap(#[from] wasmtime::Trap),
     #[error("unknown enum variant: {0}")]
     UnknownEnum(String),
     #[error("not implemented")]
@@ -53,6 +56,15 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
                 "io/github/kawamuray/wasmtime/WasmtimeException",
                 e.to_string(),
             ),
+            WasmTrap(trap) => {
+                let jtrap = wtrap::into_java(env, trap)?;
+                let jtrap_ex = env.new_object(
+                    "io/github/kawamuray/wasmtime/TrapException",
+                    "(Lio/github/kawamuray/wasmtime/Trap;)V",
+                    &[jtrap.into()],
+                )?;
+                return Ok(jtrap_ex.into());
+            }
             WasiConfig(e) => (
                 "io/github/kawamuray/wasmtime/WasmtimeException",
                 e.to_string(),
