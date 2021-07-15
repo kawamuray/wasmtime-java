@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class Store implements Disposable {
+public class Store<T> implements Disposable {
     static {
         NativeLibraryLoader.init();
     }
@@ -16,24 +16,31 @@ public class Store implements Disposable {
     @Getter
     private long innerPtr;
 
-    public Store() {
-        this(newStore());
+    public Store(T data) {
+        this(newStore(data));
     }
 
-    public Store(Engine engine){
-        this(newStoreWithEngine(engine));
+    public Store(T data, Engine engine){
+        this(newStoreWithEngine(data, engine));
     }
 
     public Engine engine() {
         return new Engine(enginePtr());
     }
 
+    @SuppressWarnings("unchecked")
+    public T data() {
+        return (T) storedData();
+    }
+
     @Override
     public native void dispose();
 
-    private static native long newStore();
+    private static native long newStore(Object data);
 
-    private static native long newStoreWithEngine(Engine engine);
+    private static native long newStoreWithEngine(Object data, Engine engine);
 
     private native long enginePtr();
+
+    private native Object storedData();
 }

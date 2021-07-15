@@ -10,11 +10,11 @@ import io.github.kawamuray.wasmtime.Linker;
 
 @Accessors(fluent = true)
 @AllArgsConstructor
-public class Wasi implements Disposable {
+public class WasiCtx implements Disposable {
     @Getter(AccessLevel.PACKAGE)
     private long innerPtr;
 
-    public Wasi(Store store, WasiConfig ctx) {
+    public WasiCtx(Store store, WasiConfig ctx) {
         this(newWasi(store.innerPtr(), ctx));
     }
 

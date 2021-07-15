@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import io.github.kawamuray.wasmtime.wasi.Wasi;
+import io.github.kawamuray.wasmtime.wasi.WasiCtx;
 import io.github.kawamuray.wasmtime.wasi.WasiConfig;
 import org.junit.Test;
 
@@ -116,7 +116,7 @@ public class FuncTest {
     public void testWasiExitTrap() {
         try (Store store = new Store();
              Linker linker = new Linker(store);
-             Wasi wasi = new Wasi(store, new WasiConfig(new String[0], new WasiConfig.PreopenDir[0]));
+             WasiCtx wasi = new WasiCtx(store, new WasiConfig(new String[0], new WasiConfig.PreopenDir[0]));
              Engine engine = store.engine();
              Module module = new Module(engine, WAT_BYTES_WASI_EXIT)) {
             wasi.addToLinker(linker);

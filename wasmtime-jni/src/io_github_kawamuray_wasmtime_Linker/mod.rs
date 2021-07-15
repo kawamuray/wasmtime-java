@@ -29,19 +29,21 @@ trait JniLinker<'a> {
         name: JString,
         extern_item: JObject,
     ) -> Result<(), Self::Error>;
-    fn native_get_one_by_name(
+    fn native_get(
         env: &JNIEnv,
         this: JObject,
+        store_ptr: jlong,
         module: JString,
         name: JString,
     ) -> Result<jobject, Self::Error>;
     fn native_module(
         env: &JNIEnv,
         this: JObject,
+        store_ptr: jlong,
         module_name: JString,
         module_ptr: jlong,
     ) -> Result<(), Self::Error>;
-    fn new_linker(env: &JNIEnv, clazz: JClass, store_ptr: jlong) -> Result<jlong, Self::Error>;
+    fn new_linker(env: &JNIEnv, clazz: JClass, engine_ptr: jlong) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
@@ -65,15 +67,16 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeDefine(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGetOneByName(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet(
     env: JNIEnv,
     this: JObject,
+    store_ptr: jlong,
     module: JString,
     name: JString,
 ) -> jobject {
     wrap_error!(
         env,
-        JniLinkerImpl::native_get_one_by_name(&env, this, module, name),
+        JniLinkerImpl::native_get(&env, this, store_ptr, module, name),
         JObject::null().into_inner()
     )
 }
@@ -82,12 +85,13 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGetOneByName(
 extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule(
     env: JNIEnv,
     this: JObject,
+    store_ptr: jlong,
     module_name: JString,
     module_ptr: jlong,
 ) {
     wrap_error!(
         env,
-        JniLinkerImpl::native_module(&env, this, module_name, module_ptr),
+        JniLinkerImpl::native_module(&env, this, store_ptr, module_name, module_ptr),
         Default::default()
     )
 }
@@ -96,11 +100,11 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule(
 extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_newLinker(
     env: JNIEnv,
     clazz: JClass,
-    store_ptr: jlong,
+    engine_ptr: jlong,
 ) -> jlong {
     wrap_error!(
         env,
-        JniLinkerImpl::new_linker(&env, clazz, store_ptr),
+        JniLinkerImpl::new_linker(&env, clazz, engine_ptr),
         Default::default()
     )
 }

@@ -22,8 +22,18 @@ macro_rules! wrap_error {
 trait JniInstance<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn native_get_func(env: &JNIEnv, this: JObject, name: JString) -> Result<jlong, Self::Error>;
-    fn native_get_memory(env: &JNIEnv, this: JObject, name: JString) -> Result<jlong, Self::Error>;
+    fn native_get_func(
+        env: &JNIEnv,
+        this: JObject,
+        store_ptr: jlong,
+        name: JString,
+    ) -> Result<jlong, Self::Error>;
+    fn native_get_memory(
+        env: &JNIEnv,
+        this: JObject,
+        store_ptr: jlong,
+        name: JString,
+    ) -> Result<jlong, Self::Error>;
     fn new_instance(
         env: &JNIEnv,
         clazz: JClass,
@@ -46,11 +56,12 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_dispose(env: JNIEn
 extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc(
     env: JNIEnv,
     this: JObject,
+    store_ptr: jlong,
     name: JString,
 ) -> jlong {
     wrap_error!(
         env,
-        JniInstanceImpl::native_get_func(&env, this, name),
+        JniInstanceImpl::native_get_func(&env, this, store_ptr, name),
         Default::default()
     )
 }
@@ -59,11 +70,12 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc(
 extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetMemory(
     env: JNIEnv,
     this: JObject,
+    store_ptr: jlong,
     name: JString,
 ) -> jlong {
     wrap_error!(
         env,
-        JniInstanceImpl::native_get_memory(&env, this, name),
+        JniInstanceImpl::native_get_memory(&env, this, store_ptr, name),
         Default::default()
     )
 }

@@ -192,21 +192,6 @@ public class Config implements Disposable{
     /// The default value for this is `false`
     public native Config craneliftNanCanonicalization(boolean enable);
 
-    /// Allows settings another Cranelift flag defined by a flag name and value. This allows
-    /// fine-tuning of Cranelift settings.
-    ///
-    /// Since Cranelift flags may be unstable, this method should not be considered to be stable
-    /// either; other `Config` functions should be preferred for stability.
-    ///
-    /// Note that this is marked as unsafe, because setting the wrong flag might break invariants,
-    /// resulting in execution hazards.
-    ///
-    /// # Errors
-    ///
-    /// This method can fail if the flag's name does not exist, or the value is not appropriate for
-    /// the flag type.
-    public native Config craneliftOtherFlag(String name, String value);
-
     /// Loads cache configuration specified at `path`.
     ///
     /// This method will read the file specified by `path` on the filesystem and

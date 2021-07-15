@@ -1,13 +1,20 @@
 use crate::errors::Result;
 use crate::utils;
+use cap_std::fs::Dir;
 use jni::objects::JObject;
 use jni::JNIEnv;
 use std::fs::File;
-use std::convert::TryFrom;
+use std::path::Path;
 use wasmtime_wasi::{WasiCtx, WasiCtxBuilder};
 
-fn preopen_dir(path: &str) -> Result<File> {
-    Ok(File::open(path)?)
+fn preopen_dir(path: &str) -> Result<Dir> {
+    Ok(unsafe { Dir::open_ambient_dir(path)? })
+}
+
+fn open_wasi_file<P: AsRef<Path>>(path: P) -> Result<wasi_cap_std_sync::file::File> {
+    let file = File::create(path)?;
+    let file = unsafe { cap_std::fs::File::from_std(file) };
+    Ok(wasi_cap_std_sync::file::File::from_cap_std(file))
 }
 
 pub fn ctx_from_java(env: &JNIEnv, obj: JObject) -> Result<WasiCtx> {
@@ -26,7 +33,7 @@ pub fn ctx_from_java(env: &JNIEnv, obj: JObject) -> Result<WasiCtx> {
         )?
         .l()?;
     let mut builder = WasiCtxBuilder::new();
-    builder.inherit_stdio().inherit_env().args(args);
+    builder = builder.inherit_stdio().inherit_env()?.args(&args)?;
 
     let iter = utils::JavaArrayIter::new(env, preopen_dirs.into_inner())?;
     for obj in iter {
@@ -34,18 +41,16 @@ pub fn ctx_from_java(env: &JNIEnv, obj: JObject) -> Result<WasiCtx> {
         let host_path = utils::get_string_field(env, obj, "hostPath")?;
         let guest_path = utils::get_string_field(env, obj, "guestPath")?;
         let dir = preopen_dir(&host_path)?;
-        builder.preopened_dir(dir, &guest_path);
+        builder = builder.preopened_dir(dir, &guest_path)?
     }
 
     if let Some(file) = utils::get_nullable_string_field(env, obj, "stdoutFile")? {
-        let file = File::create(file)?;
-        let file = wasi_common::OsFile::try_from(file)?;
-        builder.stdout(file);
+        let file = open_wasi_file(file)?;
+        builder = builder.stdout(Box::new(file));
     }
     if let Some(file) = utils::get_nullable_string_field(env, obj, "stderrFile")? {
-        let file = File::create(file)?;
-        let file = wasi_common::OsFile::try_from(file)?;
-        builder.stderr(file);
+        let file = open_wasi_file(file)?;
+        builder = builder.stderr(Box::new(file));
     }
-    Ok(builder.build()?)
+    Ok(builder.build())
 }

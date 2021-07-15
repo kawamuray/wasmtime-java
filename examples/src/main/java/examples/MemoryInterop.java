@@ -15,7 +15,7 @@ import io.github.kawamuray.wasmtime.Module;
 import io.github.kawamuray.wasmtime.Store;
 import io.github.kawamuray.wasmtime.WasmFunctions;
 import io.github.kawamuray.wasmtime.WasmFunctions.Consumer0;
-import io.github.kawamuray.wasmtime.wasi.Wasi;
+import io.github.kawamuray.wasmtime.wasi.WasiCtx;
 import io.github.kawamuray.wasmtime.wasi.WasiConfig;
 import io.github.kawamuray.wasmtime.wasi.WasiConfig.PreopenDir;
 
@@ -32,7 +32,7 @@ public class MemoryInterop {
         AtomicReference<Memory> memRef = new AtomicReference<>();
         try (Store store = new Store();
              Linker linker = new Linker(store);
-             Wasi wasi = new Wasi(store, new WasiConfig(new String[0], new PreopenDir[0]));
+             WasiCtx wasi = new WasiCtx(store, new WasiConfig(new String[0], new PreopenDir[0]));
              Func pollWordFn = WasmFunctions.wrap(store, I64, I32, I32, (addr, len) -> {
                  System.err.println("Address to store word: " + addr);
                  ByteBuffer buf = memRef.get().buffer();

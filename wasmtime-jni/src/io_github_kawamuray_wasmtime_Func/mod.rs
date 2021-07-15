@@ -25,6 +25,7 @@ trait JniFunc<'a> {
     fn native_call(
         env: &JNIEnv,
         this: JObject,
+        store_ptr: jlong,
         args: jobjectArray,
     ) -> Result<jobjectArray, Self::Error>;
     fn new_func(
@@ -45,11 +46,12 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Func_dispose(env: JNIEnv, t
 extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall(
     env: JNIEnv,
     this: JObject,
+    store_ptr: jlong,
     args: jobjectArray,
 ) -> jobjectArray {
     wrap_error!(
         env,
-        JniFuncImpl::native_call(&env, this, args),
+        JniFuncImpl::native_call(&env, this, store_ptr, args),
         JObject::null().into_inner()
     )
 }
