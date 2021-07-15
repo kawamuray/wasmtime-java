@@ -23,12 +23,14 @@ trait JniStore<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn engine_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
-    fn new_store(env: &JNIEnv, clazz: JClass) -> Result<jlong, Self::Error>;
-    fn new_store_with_engine(
+    fn new_store(
         env: &JNIEnv,
         clazz: JClass,
-        engine: JObject,
+        engine_ptr: jlong,
+        data: JObject,
+        wasi_ctx_ptr: jlong,
     ) -> Result<jlong, Self::Error>;
+    fn stored_data(env: &JNIEnv, this: JObject) -> Result<jobject, Self::Error>;
 }
 
 #[no_mangle]
@@ -52,23 +54,25 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_enginePtr(
 extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore(
     env: JNIEnv,
     clazz: JClass,
+    engine_ptr: jlong,
+    data: JObject,
+    wasi_ctx_ptr: jlong,
 ) -> jlong {
     wrap_error!(
         env,
-        JniStoreImpl::new_store(&env, clazz),
+        JniStoreImpl::new_store(&env, clazz, engine_ptr, data, wasi_ctx_ptr),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStoreWithEngine(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_storedData(
     env: JNIEnv,
-    clazz: JClass,
-    engine: JObject,
-) -> jlong {
+    this: JObject,
+) -> jobject {
     wrap_error!(
         env,
-        JniStoreImpl::new_store_with_engine(&env, clazz, engine),
-        Default::default()
+        JniStoreImpl::stored_data(&env, this),
+        JObject::null().into_inner()
     )
 }

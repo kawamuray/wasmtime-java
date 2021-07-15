@@ -12,7 +12,7 @@ impl<'a> JniEngine<'a> for JniEngineImpl {
     type Error = errors::Error;
 
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::take_inner::<Engine>(&env, this)?;
+        interop::dispose_inner::<Engine>(&env, this)?;
         Ok(())
     }
 
@@ -27,7 +27,7 @@ impl<'a> JniEngine<'a> for JniEngineImpl {
         config: JObject,
     ) -> Result<jlong, Self::Error> {
         let config = interop::get_inner::<Config>(&env, config)?;
-        let engine = Engine::new(&config);
+        let engine = Engine::new(&config)?;
         Ok(interop::into_raw::<Engine>(engine))
     }
 }

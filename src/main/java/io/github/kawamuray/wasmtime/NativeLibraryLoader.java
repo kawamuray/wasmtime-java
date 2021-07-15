@@ -1,20 +1,17 @@
 package io.github.kawamuray.wasmtime;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Locale;
 import java.util.Properties;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-final class NativeLibraryLoader {
+public final class NativeLibraryLoader {
     private static final String NATIVE_LIBRARY_NAME = "wasmtime_jni";
     private static final String DISABLE_AUTO_LOAD_ENV = "WASMTIME_JNI_LOAD_DISABLED";
     private static final String META_PROPS_FILE = "wasmtime-java-meta.properties";

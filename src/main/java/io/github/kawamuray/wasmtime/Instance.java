@@ -21,20 +21,20 @@ public class Instance implements Disposable {
 
     private static native long newInstance(long storePtr, long modulePtr, Extern[] externs);
 
-    public Optional<Func> getFunc(String name) {
-        long ptr = nativeGetFunc(name);
+    public <T> Optional<Func> getFunc(Store<T> store, String name) {
+        long ptr = nativeGetFunc(store.innerPtr(), name);
         return ptr == 0 ? Optional.empty() : Optional.of(new Func(ptr));
     }
 
-    public Optional<Memory> getMemory(String name) {
-        long ptr = nativeGetMemory(name);
+    public <T> Optional<Memory> getMemory(Store<T> store, String name) {
+        long ptr = nativeGetMemory(store.innerPtr(), name);
         return ptr == 0 ? Optional.empty() : Optional.of(new Memory(ptr));
     }
 
     @Override
     public native void dispose();
 
-    private native long nativeGetFunc(String name);
+    private native long nativeGetFunc(long storePtr, String name);
 
-    private native long nativeGetMemory(String name);
+    private native long nativeGetMemory(long storePtr, String name);
 }

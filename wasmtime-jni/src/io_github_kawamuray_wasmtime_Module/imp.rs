@@ -12,7 +12,7 @@ impl<'a> JniModule<'a> for JniModuleImpl {
     type Error = errors::Error;
 
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::take_inner::<Module>(&env, this)?;
+        interop::dispose_inner::<Module>(&env, this)?;
         Ok(())
     }
 

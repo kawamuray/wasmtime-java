@@ -5,7 +5,7 @@ use jni::objects::JThrowable;
 use jni::{self, JNIEnv};
 use std::io;
 use thiserror::Error;
-use wasi_common::WasiCtxBuilderError;
+use wasi_common::StringArrayError;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -24,7 +24,7 @@ pub enum Error {
     #[error("{0}")]
     LockPoison(String),
     #[error("{0}")]
-    WasiConfig(#[from] WasiCtxBuilderError),
+    WasiConfig(#[from] StringArrayError),
     #[error("IO error: {0}")]
     Io(#[from] io::Error),
 }
