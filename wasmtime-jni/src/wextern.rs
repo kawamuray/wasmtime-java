@@ -40,7 +40,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
             let fn_obj = env.new_object(
                 "io/github/kawamuray/wasmtime/Func",
                 "(J)V",
-                &[interop::into_raw(func).into()],
+                &[interop::into_raw::<Func>(func).into()],
             )?;
             env.call_static_method(
                 "io/github/kawamuray/wasmtime/Extern",
@@ -54,7 +54,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
             let mem_obj = env.new_object(
                 "io/github/kawamuray/wasmtime/Memory",
                 "(J)V",
-                &[interop::into_raw(memory).into()],
+                &[interop::into_raw::<Memory>(memory).into()],
             )?;
             env.call_static_method(
                 "io/github/kawamuray/wasmtime/Extern",

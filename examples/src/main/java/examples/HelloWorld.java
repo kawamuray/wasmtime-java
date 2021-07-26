@@ -17,7 +17,7 @@ public class HelloWorld {
         // `Store` structure. Note that you can also tweak configuration settings
         // with a `Config` and an `Engine` if desired.
         System.err.println("Initializing...");
-        try (Store store = new Store()) {
+        try (Store<Void> store = Store.withoutData()) {
             // Compile the wasm binary into an in-memory instance of a `Module`.
             System.err.println("Compiling module...");
             try (Engine engine = store.engine();
@@ -37,8 +37,8 @@ public class HelloWorld {
                     try (Instance instance = new Instance(store, module, imports)) {
                         // Next we poke around a bit to extract the `run` function from the module.
                         System.err.println("Extracting export...");
-                        try (Func f = instance.getFunc("run").get()) {
-                            WasmFunctions.Consumer0 fn = WasmFunctions.consumer(f);
+                        try (Func f = instance.getFunc(store, "run").get()) {
+                            WasmFunctions.Consumer0 fn = WasmFunctions.consumer(store, f);
 
                             // And last but not least we can call it!
                             System.err.println("Calling export...");

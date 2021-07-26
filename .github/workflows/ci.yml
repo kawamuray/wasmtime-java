@@ -18,10 +18,10 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Set up stable Rust
+    - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
+        toolchain: nightly-2021-07-26
         override: true
         components: rustfmt
     - name: Build with Gradle
@@ -42,10 +42,10 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Set up stable Rust
+    - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
+        toolchain: nightly-2021-07-26
         override: true
         components: rustfmt
     - name: Build

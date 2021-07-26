@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Func implements Disposable {
     @FunctionalInterface
-    public interface Handler {
-        Optional<Trap> call(Caller caller, Val[] params, Val[] results);
+    public interface Handler<T> {
+        Optional<Trap> call(Caller<T> caller, Val[] params, Val[] results);
     }
 
     private static final Val[] EMPTY_VALS = new Val[0];
@@ -26,11 +26,11 @@ public class Func implements Disposable {
     @Getter(AccessLevel.PACKAGE)
     private final long innerPtr;
 
-    public Func(Store store, FuncType fnType, Handler func) {
+    public <T> Func(Store<T> store, FuncType fnType, Handler<T> func) {
         this(create(store, fnType, func));
     }
 
-    private static long create(Store store, FuncType fnType, Handler handler) {
+    private static <T> long create(Store<T> store, FuncType fnType, Handler<T> handler) {
         int index = registry.acquire(handler);
         log.debug("New trampoline {} of type {}", index, fnType);
         return newFunc(store.innerPtr(), fnType, index);
@@ -43,8 +43,8 @@ public class Func implements Disposable {
      * @throws TrapException if the function throws an exception or exits with WASI API
      * @throws WasmtimeException if the wasmtime runtime throws an internal exception
      */
-    public Val[] call(Val... args) {
-        return nativeCall(args);
+    public <T> Val[] call(Store<T> store, Val... args) {
+        return nativeCall(store.innerPtr(), args);
     }
 
     /**
@@ -54,20 +54,20 @@ public class Func implements Disposable {
      * @throws TrapException if the function throws an exception or exits with WASI API
      * @throws WasmtimeException if the wasmtime runtime throws an internal exception
      */
-    public List<Val> call(Collection<Val> args) {
-        return Arrays.asList(call(args.toArray(EMPTY_VALS)));
+    public <T> List<Val> call(Store<T> store, Collection<Val> args) {
+        return Arrays.asList(call(store, args.toArray(EMPTY_VALS)));
     }
 
     // "trampoline" method to call back Java function from wasmtime through JNI code
-    private static Trap invokeTrampoline(long callerPtr, int index, Val[] params, Val[] results) {
+    private static <T> Trap invokeTrampoline(long callerPtr, int index, Val[] params, Val[] results) {
         if (log.isDebugEnabled()) {
             log.debug("Trampoline {} invoked with params={}, results={}", index, params, results);
         }
-        Handler fn = registry.lookup(index);
+        Handler<T> fn = registry.lookup(index);
         if (fn == null) {
             return Trap.fromMessage("no trampoline function associated to index: " + index);
         }
-        try (Caller caller = new Caller(callerPtr)) {
+        try (Caller<T> caller = new Caller<>(callerPtr)) {
             return fn.call(caller, params, results).orElse(null);
         } catch (Throwable e) {
             return Trap.fromException(e);
@@ -85,5 +85,5 @@ public class Func implements Disposable {
 
     private static native long newFunc(long storePtr, FuncType fnType, int index);
 
-    private native Val[] nativeCall(Val[] args);
+    private native Val[] nativeCall(long storePtr, Val[] args);
 }

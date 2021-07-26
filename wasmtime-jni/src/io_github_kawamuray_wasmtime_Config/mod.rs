@@ -42,12 +42,6 @@ trait JniConfig<'a> {
         this: JObject,
         level: JObject,
     ) -> Result<jobject, Self::Error>;
-    fn cranelift_other_flag(
-        env: &JNIEnv,
-        this: JObject,
-        name: JString,
-        value: JString,
-    ) -> Result<jobject, Self::Error>;
     fn debug_info(env: &JNIEnv, this: JObject, enable: jboolean) -> Result<jobject, Self::Error>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn dynamic_memory_guard_size(
@@ -150,20 +144,6 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftOptLevel(
     wrap_error!(
         env,
         JniConfigImpl::cranelift_opt_level(&env, this, level),
-        JObject::null().into_inner()
-    )
-}
-
-#[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftOtherFlag(
-    env: JNIEnv,
-    this: JObject,
-    name: JString,
-    value: JString,
-) -> jobject {
-    wrap_error!(
-        env,
-        JniConfigImpl::cranelift_other_flag(&env, this, name, value),
         JObject::null().into_inner()
     )
 }
