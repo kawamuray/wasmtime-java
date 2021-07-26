@@ -65,22 +65,6 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         config.cranelift_opt_level(optlevel);
         Ok(this.into_inner())
     }
-    fn cranelift_other_flag(
-        env: &JNIEnv,
-        this: JObject,
-        name: JString,
-        value: JString,
-    ) -> Result<jobject, Self::Error> {
-        let mut config = interop::get_inner::<Config>(env, this)?;
-        let name_j_str = env.get_string(name)?;
-        let name_str = name_j_str.to_str().expect("error flag name!");
-        let value_j_str = env.get_string(value)?;
-        let value_str = value_j_str.to_str().expect("error flag value!");
-        unsafe {
-            config.cranelift_other_flag(name_str, value_str)?;
-        }
-        Ok(this.into_inner())
-    }
     fn debug_info(env: &JNIEnv, this: JObject, enable: jboolean) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.debug_info(enable == 1);
@@ -106,7 +90,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     }
     fn max_wasm_stack(env: &JNIEnv, this: JObject, size: jlong) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        config.max_wasm_stack(size as usize);
+        config.max_wasm_stack(size as usize)?;
         Ok(this.into_inner())
     }
     fn new_config(_env: &JNIEnv, _clazz: JClass) -> Result<jlong, Self::Error> {
@@ -193,7 +177,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         Ok(this.into_inner())
     }
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::take_inner::<Config>(&env, this)?;
+        interop::dispose_inner::<Config>(&env, this)?;
         Ok(())
     }
 }

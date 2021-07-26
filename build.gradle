@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'io.github.kawamuray.wasmtime'
-version = '0.5.0'
+version = '0.6.0'
 
 repositories {
     jcenter()
@@ -110,8 +110,10 @@ task generateJniInterfaces(type:JavaExec) {
             'io.github.kawamuray.wasmtime.Memory',
             'io.github.kawamuray.wasmtime.Module',
             'io.github.kawamuray.wasmtime.Store',
-            'io.github.kawamuray.wasmtime.wasi.Wasi',
-            'io.github.kawamuray.wasmtime.Config']
+            'io.github.kawamuray.wasmtime.Config',
+            'io.github.kawamuray.wasmtime.Caller',
+            'io.github.kawamuray.wasmtime.wasi.WasiCtx',
+            'io.github.kawamuray.wasmtime.wasi.WasiCtxBuilder']
     dependsOn 'unzipJavah4x', 'compileJava'
     // JNI shared object isn't available at this stage
     environment 'WASMTIME_JNI_LOAD_DISABLED', '1'

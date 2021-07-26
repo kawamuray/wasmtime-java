@@ -29,12 +29,12 @@ public class WasmFunctionsTest {
 
     @Test
     public void testFunc() {
-        try (Store store = new Store();
+        try (Store<Void> store = Store.withoutData();
              Engine engine = store.engine();
              Module module = new Module(engine, WAT_BYTES_ADD);
              Instance instance = new Instance(store, module, Collections.emptyList())) {
-            try (Func func = instance.getFunc("add").get()) {
-                Function2<Integer, Integer, Integer> add = WasmFunctions.func(func, I32, I32, I32);
+            try (Func func = instance.getFunc(store, "add").get()) {
+                Function2<Integer, Integer, Integer> add = WasmFunctions.func(store, func, I32, I32, I32);
                 assertEquals(3, add.call(1, 2).intValue());
             }
         }
@@ -42,13 +42,13 @@ public class WasmFunctionsTest {
 
     @Test
     public void testWrapFunction() {
-        try (Store store = new Store();
+        try (Store<Void> store = Store.withoutData();
              Engine engine = store.engine();
              Module module = new Module(engine, WAT_BYTES_TRAMPOLINE);
              Func callback = WasmFunctions.wrap(store, I64, I64, I64, (lhs, rhs) -> lhs + rhs);
              Instance instance = new Instance(store, module, Arrays.asList(Extern.fromFunc(callback)))) {
-            try (Func func = instance.getFunc("trampoline").get()) {
-                Function2<Long, Long, Long> trampoline = WasmFunctions.func(func, I64, I64, I64);
+            try (Func func = instance.getFunc(store, "trampoline").get()) {
+                Function2<Long, Long, Long> trampoline = WasmFunctions.func(store, func, I64, I64, I64);
                 long sum = trampoline.call(1L, 2L);
                 assertEquals(3L, sum);
             }

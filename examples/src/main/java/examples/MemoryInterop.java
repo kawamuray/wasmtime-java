@@ -15,9 +15,8 @@ import io.github.kawamuray.wasmtime.Module;
 import io.github.kawamuray.wasmtime.Store;
 import io.github.kawamuray.wasmtime.WasmFunctions;
 import io.github.kawamuray.wasmtime.WasmFunctions.Consumer0;
-import io.github.kawamuray.wasmtime.wasi.Wasi;
-import io.github.kawamuray.wasmtime.wasi.WasiConfig;
-import io.github.kawamuray.wasmtime.wasi.WasiConfig.PreopenDir;
+import io.github.kawamuray.wasmtime.wasi.WasiCtx;
+import io.github.kawamuray.wasmtime.wasi.WasiCtxBuilder;
 
 public class MemoryInterop {
     // Build it with `cargo wasi build`
@@ -30,12 +29,12 @@ public class MemoryInterop {
         // Let the poll_word function to refer this as a placeholder of Memory because
         // we have to add the function as import before loading the module exporting Memory.
         AtomicReference<Memory> memRef = new AtomicReference<>();
-        try (Store store = new Store();
-             Linker linker = new Linker(store);
-             Wasi wasi = new Wasi(store, new WasiConfig(new String[0], new PreopenDir[0]));
+        try (WasiCtx wasi = new WasiCtxBuilder().inheritStdout().inheritStderr().build();
+             Store<Void> store = Store.withoutData(wasi);
+             Linker linker = new Linker(store.engine());
              Func pollWordFn = WasmFunctions.wrap(store, I64, I32, I32, (addr, len) -> {
                  System.err.println("Address to store word: " + addr);
-                 ByteBuffer buf = memRef.get().buffer();
+                 ByteBuffer buf = memRef.get().buffer(store);
                  String word = words[counter.getAndIncrement() % words.length];
                  for (int i = 0; i < len && i < word.length(); i++) {
                      buf.put(addr.intValue() + i, (byte) word.charAt(i));
@@ -44,14 +43,14 @@ public class MemoryInterop {
              });
              Module module = Module.fromFile(store.engine(), WASM_PATH)) {
 
-            wasi.addToLinker(linker);
+            WasiCtx.addToLinker(linker);
             linker.define("xyz", "poll_word", Extern.fromFunc(pollWordFn));
-            linker.module("", module);
+            linker.module(store, "", module);
 
-            try (Memory mem = linker.getOneByName("", "memory").memory();
-                 Func doWorkFn = linker.getOneByName("", "do_work").func()) {
+            try (Memory mem = linker.get(store, "", "memory").get().memory();
+                 Func doWorkFn = linker.get(store, "", "do_work").get().func()) {
                 memRef.set(mem);
-                Consumer0 doWork = WasmFunctions.consumer(doWorkFn);
+                Consumer0 doWork = WasmFunctions.consumer(store, doWorkFn);
                 doWork.accept();
                 doWork.accept();
                 doWork.accept();

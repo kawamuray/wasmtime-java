@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class Caller implements Disposable {
+public class Caller<T> implements Disposable {
     @Getter(AccessLevel.PACKAGE)
     private long innerPtr;
 
@@ -17,9 +17,7 @@ public class Caller implements Disposable {
         return Optional.ofNullable(nativeGetExport(name));
     }
 
-    public Store store() {
-        return new Store(storePtr());
-    }
+    public native T data();
 
     @Override
     public void dispose() {
@@ -29,7 +27,5 @@ public class Caller implements Disposable {
         innerPtr = 0;
     }
 
-    private static native Extern nativeGetExport(String name);
-
-    private native long storePtr();
+    private native Extern nativeGetExport(String name);
 }

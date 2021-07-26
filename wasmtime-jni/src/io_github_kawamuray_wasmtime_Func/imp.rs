@@ -1,5 +1,7 @@
 use super::JniFunc;
 use crate::errors::{self, Result};
+use crate::interop::ReentrantLock;
+use crate::store::StoreData;
 use crate::{interop, utils, wtrap, wval};
 use jni::objects::{JClass, JObject};
 use jni::sys::{jint, jlong, jobjectArray};
@@ -18,7 +20,7 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
         fn_type: JObject,
         index: jint,
     ) -> Result<jlong, Self::Error> {
-        let store = interop::ref_from_raw::<Store>(store_ptr)?;
+        let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
 
         let param_types = wval::types_from_java(
             &env,
@@ -42,14 +44,14 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
             .into_inner(),
         )?
         .into_boxed_slice();
-        let fn_type = FuncType::new(param_types, result_types);
+        let fn_type = FuncType::new(param_types.to_vec(), result_types.to_vec());
 
         let jvm = env.get_java_vm()?;
         let finalizer = FuncFinalizer {
             jvm: env.get_java_vm()?,
             index,
         };
-        let func = Func::new(&store, fn_type, move |caller, params, results| {
+        let func = Func::new(&mut *store, fn_type, move |caller, params, results| {
             let ret = invoke_trampoline(&jvm, index, caller, params, results, &finalizer);
             match ret {
                 Ok(None) => Ok(()),
@@ -64,8 +66,10 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
     fn native_call(
         env: &JNIEnv,
         this: JObject,
+        store_ptr: jlong,
         args: jobjectArray,
     ) -> Result<jobjectArray, Self::Error> {
+        let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
         let func = interop::get_inner::<Func>(&env, this)?;
 
         let iter = utils::JavaArrayIter::new(env, args)?;
@@ -75,7 +79,7 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
             wasm_params.push(wasm_val);
         }
 
-        let results = match func.call(&wasm_params) {
+        let results = match func.call(&mut *store, &wasm_params) {
             Ok(results) => results,
             Err(e) => {
                 return Err(match e.downcast::<Trap>() {
@@ -94,7 +98,7 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
     }
 
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::take_inner::<Func>(&env, this)?;
+        interop::dispose_inner::<Func>(&env, this)?;
         Ok(())
     }
 }
@@ -117,10 +121,10 @@ impl Drop for FuncFinalizer {
     }
 }
 
-fn invoke_trampoline<'a>(
+fn invoke_trampoline<'a, T>(
     jvm: &JavaVM,
     index: jint,
-    caller: Caller<'a>,
+    caller: Caller<'a, T>,
     params: &[Val],
     results: &mut [Val],
     // Just to capture it in closure calling this so that it drops alongs with closure
@@ -143,7 +147,8 @@ fn invoke_trampoline<'a>(
         "io/github/kawamuray/wasmtime/Val",
         JObject::null(),
     )?;
-    let caller_ptr = &caller as *const Caller as jlong;
+    let caller = ReentrantLock::new(caller);
+    let caller_ptr = &caller as *const ReentrantLock<Caller<_>> as jlong;
 
     let trap = env
         .call_static_method(
