@@ -58,4 +58,6 @@ public class Store<T> implements Disposable {
     private native long enginePtr();
 
     private native Object storedData();
+
+    public native void gc();
 }

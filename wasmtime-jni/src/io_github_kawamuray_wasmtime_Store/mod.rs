@@ -23,6 +23,7 @@ trait JniStore<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn engine_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
+    fn gc(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn new_store(
         env: &JNIEnv,
         clazz: JClass,
@@ -48,6 +49,11 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_enginePtr(
         JniStoreImpl::engine_ptr(&env, this),
         Default::default()
     )
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_gc(env: JNIEnv, this: JObject) {
+    wrap_error!(env, JniStoreImpl::gc(&env, this), Default::default())
 }
 
 #[no_mangle]

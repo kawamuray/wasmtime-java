@@ -55,4 +55,10 @@ impl<'a> JniStore<'a> for JniStoreImpl {
             JObject::null().into_inner()
         })
     }
+
+    fn gc(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
+        let mut store = interop::get_inner::<Store<StoreData>>(&env, this)?;
+        store.gc();
+        Ok(())
+    }
 }
