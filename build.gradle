@@ -67,6 +67,10 @@ static def jniLibOsClassifier() {
     throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
 }
 
+static def rustTargetTriple() {
+    System.getenv("JNILIB_RUST_TARGET")
+}
+
 processResources {
     dependsOn 'metaProperties', 'copyJniLib'
     from(new File(project.buildDir, "tmp")) {
@@ -144,12 +148,18 @@ task generateJniInterfaces(type:JavaExec) {
 task buildJniLib(type:Exec) {
     dependsOn 'generateJniInterfaces'
     workingDir './wasmtime-jni'
-    commandLine 'cargo', 'build', '--release'
+    def args = ['cargo', 'build', '--release']
+    def triple = rustTargetTriple()
+    if (triple != null) {
+        args += ['--target', triple]
+    }
+    commandLine args
 }
 
 task copyJniLib(type: Copy) {
     dependsOn 'buildJniLib'
-    from "wasmtime-jni/target/release"
+    def targetDir = rustTargetTriple() ?: ""
+    from "wasmtime-jni/target/$targetDir/release"
     include '*.so', '*.dylib', "*.dll"
     rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
     into new File(project.buildDir, "jni-libs")
