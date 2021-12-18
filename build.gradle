@@ -110,6 +110,7 @@ task generateJniInterfaces(type:JavaExec) {
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
             'io.github.kawamuray.wasmtime.Instance',
+            'io.github.kawamuray.wasmtime.InterruptHandle',
             'io.github.kawamuray.wasmtime.Linker',
             'io.github.kawamuray.wasmtime.Memory',
             'io.github.kawamuray.wasmtime.Module',
