@@ -21,7 +21,20 @@ macro_rules! wrap_error {
 
 trait JniInterruptHandle<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
+    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn interrupt(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_InterruptHandle_dispose(
+    env: JNIEnv,
+    this: JObject,
+) {
+    wrap_error!(
+        env,
+        JniInterruptHandleImpl::dispose(&env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]

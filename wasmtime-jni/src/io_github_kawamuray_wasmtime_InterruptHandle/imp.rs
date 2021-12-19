@@ -15,4 +15,9 @@ impl<'a> JniInterruptHandle<'a> for JniInterruptHandleImpl {
         interrupt_handle.interrupt();
         Ok(())
     }
+
+    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
+        interop::dispose_inner::<InterruptHandle>(&env, this)?;
+        Ok(())
+    }
 }
