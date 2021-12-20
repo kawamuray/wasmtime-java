@@ -1,13 +1,13 @@
 package io.github.kawamuray.wasmtime;
 
-public class InterruptHandle {
-    private final long innerPtr;
+import lombok.AllArgsConstructor;
 
-    public InterruptHandle(long storePtr) {
-        innerPtr = newInterruptHandle(storePtr);
-    }
+@AllArgsConstructor
+public class InterruptHandle implements Disposable {
+    private final long innerPtr;
 
     public native void interrupt();
 
-    private native long newInterruptHandle(long storePtr);
+    @Override
+    public native void dispose();
 }

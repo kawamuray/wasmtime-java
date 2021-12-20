@@ -13,6 +13,8 @@ mod io_github_kawamuray_wasmtime_Func;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Instance;
 #[allow(non_snake_case)]
+mod io_github_kawamuray_wasmtime_InterruptHandle;
+#[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Linker;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Memory;

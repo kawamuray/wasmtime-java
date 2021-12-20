@@ -24,6 +24,7 @@ trait JniStore<'a> {
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn engine_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
     fn gc(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn interrupt_handle_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
     fn new_store(
         env: &JNIEnv,
         clazz: JClass,
@@ -54,6 +55,18 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_enginePtr(
 #[no_mangle]
 extern "system" fn Java_io_github_kawamuray_wasmtime_Store_gc(env: JNIEnv, this: JObject) {
     wrap_error!(env, JniStoreImpl::gc(&env, this), Default::default())
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_interruptHandlePtr(
+    env: JNIEnv,
+    this: JObject,
+) -> jlong {
+    wrap_error!(
+        env,
+        JniStoreImpl::interrupt_handle_ptr(&env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]
