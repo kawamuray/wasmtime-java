@@ -3,8 +3,9 @@ use crate::errors::{self, Result};
 use crate::store::StoreData;
 use crate::{interop, utils, wextern};
 use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jlong, jobject};
+use jni::sys::{jlong, jobject, jobjectArray, jsize};
 use jni::JNIEnv;
+use std::collections::HashSet;
 use wasmtime::{Engine, Linker, Store};
 
 pub(super) struct JniLinkerImpl;
@@ -64,6 +65,48 @@ impl<'a> JniLinker<'a> for JniLinkerImpl {
             None => JObject::null().into_inner(),
         };
         Ok(ret)
+    }
+
+    fn native_externs(
+        env: &JNIEnv,
+        this: JObject,
+        store_ptr: jlong,
+        module: JString,
+    ) -> Result<jobjectArray, Self::Error> {
+        let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
+        let linker = interop::get_inner::<Linker<StoreData>>(env, this)?;
+        let module = utils::get_string(env, *module)?;
+        let mut vec: Vec<String> = Vec::new();
+        for item in linker.iter(&mut *store) {
+            if item.0.eq(&module) {
+                vec.push(item.1.to_string())
+            }
+        }
+        let ret = env.new_object_array(vec.len() as i32, "java/lang/Object", JObject::null())?;
+        for (i, item) in vec.iter().enumerate() {
+            let value: JString = env.new_string(item).unwrap().into();
+            env.set_object_array_element(ret, i as jsize, JObject::from(value))?;
+        }
+        Ok(ret.into())
+    }
+
+    fn native_modules(
+        env: &JNIEnv,
+        this: JObject,
+        store_ptr: jlong,
+    ) -> Result<jobjectArray, Self::Error> {
+        let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
+        let linker = interop::get_inner::<Linker<StoreData>>(env, this)?;
+        let mut names: HashSet<String> = HashSet::new();
+        for item in linker.iter(&mut *store) {
+            names.insert(item.0.to_string());
+        }
+        let ret = env.new_object_array(names.len() as i32, "java/lang/Object", JObject::null())?;
+        for (i, item) in names.iter().enumerate() {
+            let value: JString = env.new_string(item).unwrap().into();
+            env.set_object_array_element(ret, i as jsize, JObject::from(value))?;
+        }
+        Ok(ret.into())
     }
 
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {

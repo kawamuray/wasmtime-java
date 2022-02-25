@@ -1,6 +1,11 @@
 package io.github.kawamuray.wasmtime;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,6 +34,22 @@ public class Linker implements Disposable {
         return Optional.ofNullable(nativeGet(store.innerPtr(), module, name));
     }
 
+    public <T> Map<String, Extern> getAll(Store<T> store, String module) {
+        Map<String, Extern> map = new HashMap<>();
+        for (String name : nativeExterns(store.innerPtr(), module)) {
+            try {
+                map.put(name, nativeGet(store.innerPtr(), module, name));
+            } catch(Exception e) {
+                // ignore native errors for externs of unimplemented type
+            }
+        }
+        return map;
+    }
+
+    public <T> Set<String> modules(Store<T> store) {
+        return new HashSet<>(Arrays.asList(nativeModules(store.innerPtr())));
+    }
+
     @Override
     public native void dispose();
 
@@ -39,4 +60,8 @@ public class Linker implements Disposable {
     private native void nativeDefine(String moduleName, String name, Extern externItem);
 
     private native Extern nativeGet(long storePtr, String module, String name);
+
+    private native String[] nativeExterns(long storePtr, String module);
+
+    private native String[] nativeModules(long storePtr);
 }
