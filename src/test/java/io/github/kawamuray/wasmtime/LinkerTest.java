@@ -31,8 +31,8 @@ public class LinkerTest {
              Engine engine = store.engine();
              Module module = new Module(engine, WAT_BYTES_ADD)) {
             linker.module(store, "", module);
-            assertEquals(1, linker.getAll(store, "").size());
-            assertEquals("add", linker.getAll(store, "").keySet().iterator().next());
+            assertEquals(1, linker.externs(store, "").size());
+            assertEquals("add", linker.externs(store, "").iterator().next().getName());
         }
     }
 

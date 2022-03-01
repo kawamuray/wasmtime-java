@@ -78,13 +78,13 @@ impl<'a> JniLinker<'a> for JniLinkerImpl {
         let module = utils::get_string(env, *module)?;
         let mut vec: Vec<String> = Vec::new();
         for item in linker.iter(&mut *store) {
-            if item.0.eq(&module) {
+            if item.0 == &module {
                 vec.push(item.1.to_string())
             }
         }
         let ret = env.new_object_array(vec.len() as i32, "java/lang/Object", JObject::null())?;
         for (i, item) in vec.iter().enumerate() {
-            let value: JString = env.new_string(item).unwrap().into();
+            let value: JString = env.new_string(item)?;
             env.set_object_array_element(ret, i as jsize, JObject::from(value))?;
         }
         Ok(ret.into())

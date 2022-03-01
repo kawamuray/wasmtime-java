@@ -1,9 +1,8 @@
 package io.github.kawamuray.wasmtime;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -11,9 +10,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 @Accessors(fluent = true)
 @AllArgsConstructor(access =  AccessLevel.PACKAGE)
+@Slf4j
 public class Linker implements Disposable {
     @Getter
     private long innerPtr;
@@ -34,16 +35,17 @@ public class Linker implements Disposable {
         return Optional.ofNullable(nativeGet(store.innerPtr(), module, name));
     }
 
-    public <T> Map<String, Extern> getAll(Store<T> store, String module) {
-        Map<String, Extern> map = new HashMap<>();
+    public <T> Collection<ExternItem> externs(Store<T> store, String module) {
+        Set<ExternItem> set = new HashSet<>();
         for (String name : nativeExterns(store.innerPtr(), module)) {
             try {
-                map.put(name, nativeGet(store.innerPtr(), module, name));
+                set.add(new ExternItem(name, nativeGet(store.innerPtr(), module, name)));
             } catch(Exception e) {
                 // ignore native errors for externs of unimplemented type
+                log.debug("Encountered unsupported extern: " + name + " in module: " + module);
             }
         }
-        return map;
+        return set;
     }
 
     public <T> Set<String> modules(Store<T> store) {
