@@ -1,22 +1,24 @@
 package io.github.kawamuray.wasmtime;
 
+import lombok.Value;
+import lombok.experimental.Accessors;
+
+/**
+ * {@link Extern} with its module and name.
+ */
+@Value
+@Accessors(fluent = true)
 public class ExternItem {
-
-	private final String name;
-
-	private final Extern extern;
-
-	public ExternItem(String name, Extern extern) {
-		this.name = name;
-		this.extern = extern;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Extern getExtern() {
-		return extern;
-	}
-	
+	/**
+	 * The module defining this extern.
+	 */
+	String module;
+	/**
+	 * Name of this extern.
+	 */
+	String name;
+	/**
+	 * Extern itself.
+	 */
+	Extern extern;
 }

@@ -3,9 +3,8 @@ use crate::errors::{self, Result};
 use crate::store::StoreData;
 use crate::{interop, utils, wextern};
 use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jlong, jobject, jobjectArray, jsize};
+use jni::sys::{jlong, jobject, jobjectArray};
 use jni::JNIEnv;
-use std::collections::HashSet;
 use wasmtime::{Engine, Linker, Store};
 
 pub(super) struct JniLinkerImpl;
@@ -71,42 +70,31 @@ impl<'a> JniLinker<'a> for JniLinkerImpl {
         env: &JNIEnv,
         this: JObject,
         store_ptr: jlong,
-        module: JString,
     ) -> Result<jobjectArray, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
         let linker = interop::get_inner::<Linker<StoreData>>(env, this)?;
-        let module = utils::get_string(env, *module)?;
-        let mut vec: Vec<String> = Vec::new();
-        for item in linker.iter(&mut *store) {
-            if item.0 == &module {
-                vec.push(item.1.to_string())
-            }
+        let externs: Vec<_> = linker.iter(&mut *store).collect();
+        let mut objs = Vec::with_capacity(externs.len());
+        for (module, name, ext) in externs {
+            let jobj = match wextern::into_java(env, ext) {
+                Ok(obj) => obj,
+                Err(err) => match err {
+                    errors::Error::NotImplemented => wextern::unknown(env)?,
+                    _ => return Err(err),
+                },
+            };
+            let extern_item = env.new_object(
+                "io/github/kawamuray/wasmtime/ExternItem",
+                "(Ljava/lang/String;Ljava/lang/String;Lio/github/kawamuray/wasmtime/Extern;)V",
+                &[
+                    env.new_string(module)?.into(),
+                    env.new_string(name)?.into(),
+                    jobj.into(),
+                ],
+            )?;
+            objs.push(extern_item);
         }
-        let ret = env.new_object_array(vec.len() as i32, "java/lang/Object", JObject::null())?;
-        for (i, item) in vec.iter().enumerate() {
-            let value: JString = env.new_string(item)?;
-            env.set_object_array_element(ret, i as jsize, JObject::from(value))?;
-        }
-        Ok(ret.into())
-    }
-
-    fn native_modules(
-        env: &JNIEnv,
-        this: JObject,
-        store_ptr: jlong,
-    ) -> Result<jobjectArray, Self::Error> {
-        let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let linker = interop::get_inner::<Linker<StoreData>>(env, this)?;
-        let mut names: HashSet<String> = HashSet::new();
-        for item in linker.iter(&mut *store) {
-            names.insert(item.0.to_string());
-        }
-        let ret = env.new_object_array(names.len() as i32, "java/lang/Object", JObject::null())?;
-        for (i, item) in names.iter().enumerate() {
-            let value: JString = env.new_string(item).unwrap().into();
-            env.set_object_array_element(ret, i as jsize, JObject::from(value))?;
-        }
-        Ok(ret.into())
+        Ok(utils::into_java_array(env, "io/github/kawamuray/wasmtime/ExternItem", objs)?.into())
     }
 
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {

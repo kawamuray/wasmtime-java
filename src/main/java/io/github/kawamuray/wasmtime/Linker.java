@@ -35,21 +35,23 @@ public class Linker implements Disposable {
         return Optional.ofNullable(nativeGet(store.innerPtr(), module, name));
     }
 
-    public <T> Collection<ExternItem> externs(Store<T> store, String module) {
-        Set<ExternItem> set = new HashSet<>();
-        for (String name : nativeExterns(store.innerPtr(), module)) {
-            try {
-                set.add(new ExternItem(name, nativeGet(store.innerPtr(), module, name)));
-            } catch(Exception e) {
-                // ignore native errors for externs of unimplemented type
-                log.debug("Encountered unsupported extern: " + name + " in module: " + module);
-            }
-        }
-        return set;
+    public <T> Collection<ExternItem> externs(Store<T> store) {
+        ExternItem[] items = nativeExterns(store.innerPtr());
+        return Arrays.asList(items);
+    }
+
+    public <T> Collection<ExternItem> externsOfModule(Store<T> store, String module) {
+        Collection<ExternItem> items = externs(store);
+        items.removeIf(item -> !item.module().equals(module));
+        return items;
     }
 
     public <T> Set<String> modules(Store<T> store) {
-        return new HashSet<>(Arrays.asList(nativeModules(store.innerPtr())));
+        Set<String> modules = new HashSet<>();
+        for (ExternItem item : externs(store)) {
+            modules.add(item.module());
+        }
+        return modules;
     }
 
     @Override
@@ -63,7 +65,5 @@ public class Linker implements Disposable {
 
     private native Extern nativeGet(long storePtr, String module, String name);
 
-    private native String[] nativeExterns(long storePtr, String module);
-
-    private native String[] nativeModules(long storePtr);
+    private native ExternItem[] nativeExterns(long storePtr);
 }

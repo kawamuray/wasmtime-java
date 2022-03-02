@@ -67,3 +67,13 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
         _ => return Err(Error::NotImplemented),
     })
 }
+
+pub fn unknown<'a>(env: &'a JNIEnv) -> Result<JObject<'a>> {
+    Ok(env
+        .get_static_field(
+            "io/github/kawamuray/wasmtime/Extern",
+            "UNKNOWN",
+            "Lio/github/kawamuray/wasmtime/Extern;",
+        )?
+        .l()?)
+}

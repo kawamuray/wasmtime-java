@@ -9,11 +9,14 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Extern {
     public enum Type {
+        UNKNOWN,
         FUNC,
         GLOBAL,
         TABLE,
         MEMORY,
     }
+
+    public static final Extern UNKNOWN = new Extern(Type.UNKNOWN, null);
 
     @Getter
     private final Type type;

@@ -33,7 +33,6 @@ trait JniLinker<'a> {
         env: &JNIEnv,
         this: JObject,
         store_ptr: jlong,
-        module: JString,
     ) -> Result<jobjectArray, Self::Error>;
     fn native_get(
         env: &JNIEnv,
@@ -49,11 +48,6 @@ trait JniLinker<'a> {
         module_name: JString,
         module_ptr: jlong,
     ) -> Result<(), Self::Error>;
-    fn native_modules(
-        env: &JNIEnv,
-        this: JObject,
-        store_ptr: jlong,
-    ) -> Result<jobjectArray, Self::Error>;
     fn new_linker(env: &JNIEnv, clazz: JClass, engine_ptr: jlong) -> Result<jlong, Self::Error>;
 }
 
@@ -82,11 +76,10 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
-    module: JString,
 ) -> jobjectArray {
     wrap_error!(
         env,
-        JniLinkerImpl::native_externs(&env, this, store_ptr, module),
+        JniLinkerImpl::native_externs(&env, this, store_ptr),
         JObject::null().into_inner()
     )
 }
@@ -118,19 +111,6 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule(
         env,
         JniLinkerImpl::native_module(&env, this, store_ptr, module_name, module_ptr),
         Default::default()
-    )
-}
-
-#[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModules(
-    env: JNIEnv,
-    this: JObject,
-    store_ptr: jlong,
-) -> jobjectArray {
-    wrap_error!(
-        env,
-        JniLinkerImpl::native_modules(&env, this, store_ptr),
-        JObject::null().into_inner()
     )
 }
 
