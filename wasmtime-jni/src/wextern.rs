@@ -2,7 +2,7 @@ use crate::errors::{Error, Result};
 use crate::{interop, utils};
 use jni::objects::JObject;
 use jni::JNIEnv;
-use wasmtime::{Extern, Func, Memory};
+use wasmtime::{Extern, Func, Memory, Table, Global};
 
 pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Extern> {
     let ty = env
@@ -61,6 +61,34 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
                 "fromMemory",
                 "(Lio/github/kawamuray/wasmtime/Memory;)Lio/github/kawamuray/wasmtime/Extern;",
                 &[mem_obj.into()],
+            )?
+            .l()?
+        }
+        Extern::Table(table) => {
+            let table_obj = env.new_object(
+                "io/github/kawamuray/wasmtime/Table",
+                "(J)V",
+                &[interop::into_raw::<Table>(table).into()],
+            )?;
+            env.call_static_method(
+                "io/github/kawamuray/wasmtime/Extern",
+                "fromTable",
+                "(Lio/github/kawamuray/wasmtime/Table;)Lio/github/kawamuray/wasmtime/Extern;",
+                &[table_obj.into()],
+            )?
+            .l()?
+        }
+        Extern::Global(global) => {
+            let global_obj = env.new_object(
+                "io/github/kawamuray/wasmtime/Global",
+                "(J)V",
+                &[interop::into_raw::<Global>(global).into()],
+            )?;
+            env.call_static_method(
+                "io/github/kawamuray/wasmtime/Extern",
+                "fromGlobal",
+                "(Lio/github/kawamuray/wasmtime/Global;)Lio/github/kawamuray/wasmtime/Extern;",
+                &[global_obj.into()],
             )?
             .l()?
         }

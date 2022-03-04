@@ -18,6 +18,11 @@ public class LinkerTest {
             + "  (table (;0;) 8 8 funcref)(export \"__indirect_function_table\" (table 0))"
             + ')').getBytes();
 
+    private static final byte[] WAT_BYTES_GLOBAL = ("(module"
+            + "  (global (export \"global\") (mut i32) (i32.const 256))"
+            + "  (table (export \"__indirect_function_table\") 8 8 funcref)"
+            + ')').getBytes();
+
     @Test
     public void testModules() {
         try (Store<Void> store = Store.withoutData();
@@ -67,8 +72,22 @@ public class LinkerTest {
             assertEquals(1, externs.size());
             ExternItem item = externs.iterator().next();
             assertEquals("__indirect_function_table", item.name());
-            // TODO: should be TABLE
-            assertEquals(Extern.Type.UNKNOWN, item.extern().type());
+            assertEquals(Extern.Type.TABLE, item.extern().type());
+        }
+    }
+
+    @Test
+    public void testGlobalType() {
+        try (Store<Void> store = Store.withoutData();
+                Linker linker = new Linker(store.engine());
+                Engine engine = store.engine();
+                Module module = new Module(engine, WAT_BYTES_GLOBAL)) {
+            linker.module(store, "", module);
+            Collection<ExternItem> externs = linker.externs(store);
+            assertEquals(2, externs.size());
+            ExternItem item = externs.iterator().next();
+            assertEquals(Extern.Type.GLOBAL, item.extern().type());
+            assertEquals("global", item.name());
         }
     }
 
