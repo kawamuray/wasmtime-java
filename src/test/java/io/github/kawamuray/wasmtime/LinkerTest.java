@@ -1,8 +1,11 @@
 package io.github.kawamuray.wasmtime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -77,6 +80,21 @@ public class LinkerTest {
     }
 
     @Test
+    public void testGetGlobal() {
+        try (Store<Void> store = Store.withoutData();
+                Linker linker = new Linker(store.engine());
+                Engine engine = store.engine();
+                Module module = new Module(engine, WAT_BYTES_GLOBAL)) {
+            linker.module(store, "", module);
+            Global global = linker.get(store, "", "global").get().global();
+            assertEquals(256, global.get(store).i32());
+            assertTrue(global.isMutable(store));
+            global.set(store, Val.fromI32(123));
+            assertNotEquals(256, global.get(store).i32());
+        }
+    }
+
+    @Test
     public void testGlobalType() {
         try (Store<Void> store = Store.withoutData();
                 Linker linker = new Linker(store.engine());
@@ -85,9 +103,15 @@ public class LinkerTest {
             linker.module(store, "", module);
             Collection<ExternItem> externs = linker.externs(store);
             assertEquals(2, externs.size());
-            ExternItem item = externs.iterator().next();
+            Iterator<ExternItem> iterator = externs.iterator();
+            ExternItem item = iterator.next();
+            if (!"global".equals(item.name())) {
+                item = iterator.next();
+            }
             assertEquals(Extern.Type.GLOBAL, item.extern().type());
             assertEquals("global", item.name());
+            Global global = item.extern().global();
+            assertEquals(256, global.get(store).i32());
         }
     }
 

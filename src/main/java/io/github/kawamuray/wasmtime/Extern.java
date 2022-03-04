@@ -50,8 +50,19 @@ public class Extern {
         return (Func) value;
     }
 
+    public Global global() {
+        ensureType(Type.GLOBAL);
+        return (Global) value;
+    }
+
     public Memory memory() {
         ensureType(Type.MEMORY);
         return (Memory) value;
     }
+
+    public Table table() {
+        ensureType(Type.TABLE);
+        return (Table) value;
+    }
+
 }
