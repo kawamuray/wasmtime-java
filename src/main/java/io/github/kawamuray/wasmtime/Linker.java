@@ -41,7 +41,7 @@ public class Linker implements Disposable {
     }
 
     public <T> Collection<ExternItem> externsOfModule(Store<T> store, String module) {
-        Collection<ExternItem> items = externs(store);
+        Collection<ExternItem> items = new HashSet<>(externs(store));
         items.removeIf(item -> !item.module().equals(module));
         return items;
     }
