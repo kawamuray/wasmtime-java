@@ -11,6 +11,8 @@ mod io_github_kawamuray_wasmtime_Engine;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Func;
 #[allow(non_snake_case)]
+mod io_github_kawamuray_wasmtime_Global;
+#[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Instance;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_InterruptHandle;

@@ -1,8 +1,11 @@
 package io.github.kawamuray.wasmtime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -16,6 +19,11 @@ public class LinkerTest {
 
     private static final byte[] WAT_BYTES_TABLE = ("(module"
             + "  (table (;0;) 8 8 funcref)(export \"__indirect_function_table\" (table 0))"
+            + ')').getBytes();
+
+    private static final byte[] WAT_BYTES_GLOBAL = ("(module"
+            + "  (global (export \"global\") (mut i32) (i32.const 256))"
+            + "  (table (export \"__indirect_function_table\") 8 8 funcref)"
             + ')').getBytes();
 
     @Test
@@ -67,8 +75,43 @@ public class LinkerTest {
             assertEquals(1, externs.size());
             ExternItem item = externs.iterator().next();
             assertEquals("__indirect_function_table", item.name());
-            // TODO: should be TABLE
-            assertEquals(Extern.Type.UNKNOWN, item.extern().type());
+            assertEquals(Extern.Type.TABLE, item.extern().type());
+        }
+    }
+
+    @Test
+    public void testGetGlobal() {
+        try (Store<Void> store = Store.withoutData();
+                Linker linker = new Linker(store.engine());
+                Engine engine = store.engine();
+                Module module = new Module(engine, WAT_BYTES_GLOBAL)) {
+            linker.module(store, "", module);
+            Global global = linker.get(store, "", "global").get().global();
+            assertEquals(256, global.get(store).i32());
+            assertTrue(global.isMutable(store));
+            global.set(store, Val.fromI32(123));
+            assertNotEquals(256, global.get(store).i32());
+        }
+    }
+
+    @Test
+    public void testGlobalType() {
+        try (Store<Void> store = Store.withoutData();
+                Linker linker = new Linker(store.engine());
+                Engine engine = store.engine();
+                Module module = new Module(engine, WAT_BYTES_GLOBAL)) {
+            linker.module(store, "", module);
+            Collection<ExternItem> externs = linker.externs(store);
+            assertEquals(2, externs.size());
+            Iterator<ExternItem> iterator = externs.iterator();
+            ExternItem item = iterator.next();
+            if (!"global".equals(item.name())) {
+                item = iterator.next();
+            }
+            assertEquals(Extern.Type.GLOBAL, item.extern().type());
+            assertEquals("global", item.name());
+            Global global = item.extern().global();
+            assertEquals(256, global.get(store).i32());
         }
     }
 

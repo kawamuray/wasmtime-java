@@ -30,6 +30,14 @@ public class Extern {
         return new Extern(Type.MEMORY, memory);
     }
 
+    public static Extern fromTable(Table table) {
+        return new Extern(Type.TABLE, table);
+    }
+
+    public static Extern fromGlobal(Global table) {
+        return new Extern(Type.GLOBAL, table);
+    }
+
     private void ensureType(Type expected) {
         if (type != expected) {
             throw new RuntimeException(
@@ -42,8 +50,19 @@ public class Extern {
         return (Func) value;
     }
 
+    public Global global() {
+        ensureType(Type.GLOBAL);
+        return (Global) value;
+    }
+
     public Memory memory() {
         ensureType(Type.MEMORY);
         return (Memory) value;
     }
+
+    public Table table() {
+        ensureType(Type.TABLE);
+        return (Table) value;
+    }
+
 }
