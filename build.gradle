@@ -9,10 +9,10 @@ plugins {
 }
 
 group = 'io.github.kawamuray.wasmtime'
-version = '0.9.0'
+version = '0.9.1'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -109,6 +109,7 @@ task generateJniInterfaces(type:JavaExec) {
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
+            'io.github.kawamuray.wasmtime.ImportType',
             'io.github.kawamuray.wasmtime.Instance',
             'io.github.kawamuray.wasmtime.InterruptHandle',
             'io.github.kawamuray.wasmtime.Linker',

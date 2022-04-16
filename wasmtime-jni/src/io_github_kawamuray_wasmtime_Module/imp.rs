@@ -2,9 +2,11 @@ use super::JniModule;
 use crate::errors::{self, Result};
 use crate::{interop, utils};
 use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jbyteArray, jlong};
+use jni::sys::{jbyteArray, jint, jlong, jobjectArray, jsize};
 use jni::JNIEnv;
-use wasmtime::{Engine, Module};
+
+use crate::types::Import;
+use wasmtime::{Engine, ExternType, ImportType, Module};
 
 pub(super) struct JniModuleImpl;
 
@@ -14,6 +16,48 @@ impl<'a> JniModule<'a> for JniModuleImpl {
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
         interop::dispose_inner::<Module>(&env, this)?;
         Ok(())
+    }
+
+    fn imports<'b>(
+        env: &'b JNIEnv,
+        this: JObject,
+    ) -> std::result::Result<jobjectArray, Self::Error> {
+        const IMPORT_TYPE: &str = "io/github/kawamuray/wasmtime/ImportType";
+        let module = interop::get_inner::<Module>(env, this)?;
+        let imports = module.imports();
+        let arr = env.new_object_array(imports.len() as jsize, IMPORT_TYPE, JObject::null())?;
+
+        for (i, obj) in imports.enumerate() {
+            let obj: ImportType = obj;
+            let module = obj.module();
+            let ty = {
+                match obj.ty() {
+                    ExternType::Func(_) => "FUNC",
+                    ExternType::Global(_) => "GLOBAL",
+                    ExternType::Table(_) => "TABLE",
+                    ExternType::Memory(_) => "MEMORY",
+                    ExternType::Instance(_) => "INSTANCE",
+                    ExternType::Module(_) => "MODULE",
+                }
+            };
+            let name = obj.name().unwrap_or_else(|| "");
+
+            let obj = Import {
+                module: String::from(module),
+                name: String::from(name),
+                ty,
+            };
+
+            let import_type = env.new_object(
+                IMPORT_TYPE,
+                "(J)V",
+                &[interop::into_raw(obj).into()],
+            )?;
+
+            env.set_object_array_element(arr, i as jint, import_type)?;
+        }
+
+        Ok(arr)
     }
 
     fn new_module(

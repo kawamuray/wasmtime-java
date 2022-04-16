@@ -28,6 +28,9 @@ mod io_github_kawamuray_wasmtime_Store;
 mod io_github_kawamuray_wasmtime_wasi_WasiCtx;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_wasi_WasiCtxBuilder;
+#[allow(non_snake_case)]
+mod io_github_kawamuray_wasmtime_ImportType;
+mod types;
 mod store;
 pub(crate) mod utils;
 mod wasi_utils;
