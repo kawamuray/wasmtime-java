@@ -48,11 +48,8 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                 ty,
             };
 
-            let import_type = env.new_object(
-                IMPORT_TYPE,
-                "(J)V",
-                &[interop::into_raw(obj).into()],
-            )?;
+            let import_type =
+                env.new_object(IMPORT_TYPE, "(J)V", &[interop::into_raw(obj).into()])?;
 
             env.set_object_array_element(arr, i as jint, import_type)?;
         }
