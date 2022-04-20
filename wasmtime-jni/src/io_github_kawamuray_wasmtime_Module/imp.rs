@@ -7,6 +7,7 @@ use jni::JNIEnv;
 
 use crate::types::Import;
 use wasmtime::{Engine, ExternType, ImportType, Module};
+use crate::utils::into_java_array;
 
 pub(super) struct JniModuleImpl;
 
@@ -27,8 +28,7 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         let imports = module.imports();
         let arr = env.new_object_array(imports.len() as jsize, IMPORT_TYPE, JObject::null())?;
 
-        for (i, obj) in imports.enumerate() {
-            let obj: ImportType = obj;
+        for (i, obj ) in imports.enumerate() {
             let module = obj.module();
             let ty = {
                 match obj.ty() {

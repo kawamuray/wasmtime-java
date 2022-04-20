@@ -26,8 +26,10 @@ public class ModuleTest {
 
     @Test
     public void testAccessImports() {
-        try (Engine engine = new Engine()) {
-            Module module = new Module(engine, IMPORT_WAT_BINARY);
+        try (
+            Engine engine = new Engine();
+            Module module = new Module(engine, IMPORT_WAT_BINARY)
+        ) {
             String[][] names = {
                 {"first", "package", "FUNC"},
                 {"", "package", "FUNC"}
@@ -41,7 +43,6 @@ public class ModuleTest {
                 imp.dispose();
                 i+= 1;
             }
-            module.close();
         }
     }
 }
