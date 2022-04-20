@@ -36,7 +36,7 @@ public class ModuleTest {
             Engine engine = new Engine();
             Module module = new Module(engine, IMPORT_WAT_BINARY)
         ) {
-            // TODO: Test other import types
+            // TODO: Test other import typese
             TestImportData<?>[] testData = {
                 TestImportData.func("first", "package", new Val.Type[]{}, new Val.Type[]{}),
                 TestImportData.func("", "package", new Val.Type[]{Val.Type.I32}, new Val.Type[]{}),
@@ -71,13 +71,24 @@ public class ModuleTest {
         private final String name;
         private final ImportType.Type type;
         private final Class<T> clazz;
+        private final Consumer<ImportType> verifyImport;
         private final Consumer<T> consumer;
 
         static TestImportData<FuncType> func(String module, String name, Val.Type[] params, Val.Type[] results) {
-            return new TestImportData<>(module, name, ImportType.Type.FUNC, FuncType.class, func -> {
-                Assert.assertArrayEquals(params, func.getParams());
-                Assert.assertArrayEquals(results, func.getResults());
-            });
+            return new TestImportData<>(
+                module, name, ImportType.Type.FUNC, FuncType.class,
+                mod -> {
+                    Assert.assertEquals(mod.typeObj(), mod.func());
+                    Assert.assertThrows(RuntimeException.class, mod::func);
+                    Assert.assertThrows(RuntimeException.class, mod::global);
+                    Assert.assertThrows(RuntimeException.class, mod::memory);
+                    Assert.assertThrows(RuntimeException.class, mod::table);
+                },
+                func -> {
+                    Assert.assertArrayEquals(params, func.getParams());
+                    Assert.assertArrayEquals(results, func.getResults());
+                }
+            );
         }
 
         @SuppressWarnings("unchecked")
