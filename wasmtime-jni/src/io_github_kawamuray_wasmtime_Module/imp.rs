@@ -1,15 +1,16 @@
 use super::JniModule;
 use crate::errors::{self, Result};
-use crate::{interop, utils};
+use crate::wval::type_into_java_array;
+use crate::{interop, utils, wval};
 use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jbyteArray, jint, jlong, jobjectArray, jsize};
+use jni::sys::{jbyteArray, jlong, jobjectArray};
 use jni::JNIEnv;
-
-use crate::types::Import;
-use wasmtime::{Engine, ExternType, ImportType, Module};
-use crate::utils::into_java_array;
+use wasmtime::{Engine, ExternType, Module};
 
 pub(super) struct JniModuleImpl;
+
+const OBJECT_CLASS: &'static str = "java/lang/Object";
+pub const IMPORT_TYPE_CLASS: &'static str = "io/github/kawamuray/wasmtime/ImportType$Type";
 
 impl<'a> JniModule<'a> for JniModuleImpl {
     type Error = errors::Error;
@@ -19,42 +20,68 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         Ok(())
     }
 
+    #[allow(unreachable_code)]
     fn imports<'b>(
         env: &'b JNIEnv,
         this: JObject,
     ) -> std::result::Result<jobjectArray, Self::Error> {
+        const STRING_CLASS: &str = "java/lang/String";
         const IMPORT_TYPE: &str = "io/github/kawamuray/wasmtime/ImportType";
+
         let module = interop::get_inner::<Module>(env, this)?;
-        let imports = module.imports();
-        let arr = env.new_object_array(imports.len() as jsize, IMPORT_TYPE, JObject::null())?;
-
-        for (i, obj ) in imports.enumerate() {
+        let it = module.imports();
+        let mut imports = Vec::with_capacity(it.len());
+        for (_, obj) in it.enumerate() {
             let module = obj.module();
-            let ty = {
-                match obj.ty() {
-                    ExternType::Func(_) => "FUNC",
-                    ExternType::Global(_) => "GLOBAL",
-                    ExternType::Table(_) => "TABLE",
-                    ExternType::Memory(_) => "MEMORY",
-                    ExternType::Instance(_) => "INSTANCE",
-                    ExternType::Module(_) => "MODULE",
+            let [ty, ty_obj] = match obj.ty() {
+                ExternType::Func(func) => {
+                    let results = type_into_java_array(env, func.results());
+                    let params = type_into_java_array(env, func.params());
+
+                    [
+                        into_java_import_type(env, "FUNC"),
+                        env.new_object(
+                            "io/github/kawamuray/wasmtime/FuncType",
+                            format!("([L{};[L{};)V", wval::VAL_TYPE, wval::VAL_TYPE),
+                            &[params?.into(), results?.into()],
+                        ),
+                    ]
                 }
+                ExternType::Global(_) => {
+                    [into_java_import_type(env, "GLOBAL"), Ok(JObject::null())]
+                }
+                ExternType::Table(_) => [into_java_import_type(env, "TABLE"), Ok(JObject::null())],
+                ExternType::Memory(_) => {
+                    [into_java_import_type(env, "MEMORY"), Ok(JObject::null())]
+                }
+                ExternType::Instance(_) => {
+                    [into_java_import_type(env, "INSTANCE"), Ok(JObject::null())]
+                }
+                ExternType::Module(_) => {
+                    [into_java_import_type(env, "MODULE"), Ok(JObject::null())]
+                }
+                _ => [into_java_import_type(env, "UNKNOWN"), Ok(JObject::null())],
             };
+
             let name = obj.name().unwrap_or_else(|| "");
+            let import = env.new_object(
+                IMPORT_TYPE,
+                format!(
+                    "(L{};L{};L{};L{};)V",
+                    IMPORT_TYPE_CLASS, OBJECT_CLASS, STRING_CLASS, STRING_CLASS
+                ),
+                &[
+                    ty?.into_inner().into(),
+                    ty_obj?.into_inner().into(),
+                    env.new_string(module)?.into(),
+                    env.new_string(name)?.into(),
+                ],
+            )?;
 
-            let obj = Import {
-                module: String::from(module),
-                name: String::from(name),
-                ty,
-            };
-
-            let import_type =
-                env.new_object(IMPORT_TYPE, "(J)V", &[interop::into_raw(obj).into()])?;
-
-            env.set_object_array_element(arr, i as jint, import_type)?;
+            imports.push(import);
         }
 
-        Ok(arr)
+        Ok(utils::into_java_array(env, IMPORT_TYPE, imports)?)
     }
 
     fn new_module(
@@ -89,4 +116,9 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         let module = Module::from_binary(&*interop::ref_from_raw::<Engine>(engine_ptr)?, &bytes)?;
         Ok(interop::into_raw::<Module>(module))
     }
+}
+
+pub fn into_java_import_type<'a>(env: &'a JNIEnv, ty: &'a str) -> jni::errors::Result<JObject<'a>> {
+    env.get_static_field(IMPORT_TYPE_CLASS, ty, format!("L{};", IMPORT_TYPE_CLASS))?
+        .l()
 }

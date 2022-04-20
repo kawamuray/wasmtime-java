@@ -18,6 +18,8 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'org.slf4j:slf4j-api:1.7.25'
     testImplementation 'junit:junit:4.13'
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.2.3'
@@ -109,7 +111,6 @@ task generateJniInterfaces(type:JavaExec) {
     def targets = [
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
-            'io.github.kawamuray.wasmtime.ImportType',
             'io.github.kawamuray.wasmtime.Instance',
             'io.github.kawamuray.wasmtime.InterruptHandle',
             'io.github.kawamuray.wasmtime.Linker',

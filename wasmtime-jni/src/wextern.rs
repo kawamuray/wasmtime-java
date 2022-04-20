@@ -2,7 +2,7 @@ use crate::errors::{Error, Result};
 use crate::{interop, utils};
 use jni::objects::JObject;
 use jni::JNIEnv;
-use wasmtime::{Extern, Func, Memory, Table, Global};
+use wasmtime::{Extern, Func, Global, Memory, Table};
 
 pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Extern> {
     let ty = env

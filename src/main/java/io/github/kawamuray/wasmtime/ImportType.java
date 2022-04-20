@@ -7,16 +7,24 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class ImportType implements Disposable {
-    @Getter(AccessLevel.PACKAGE)
-    private final long innerPtr;
+public class ImportType {
+    public enum Type {
+        UNKNOWN,
+        FUNC,
+        GLOBAL,
+        TABLE,
+        MEMORY,
+    }
 
-    public native String module();
+    @Getter
+    private Type type;
 
-    public native String name();
+    @Getter
+    private Object typeObj;
 
-    public native String ty();
+    @Getter
+    private String module;
 
-    @Override
-    public native void dispose();
+    @Getter
+    private String name;
 }

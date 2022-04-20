@@ -22,22 +22,14 @@ macro_rules! wrap_error {
 trait JniGlobal<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn native_get(
-        env: &JNIEnv,
-        this: JObject,
-        store_ptr: jlong,
-    ) -> Result<jobject, Self::Error>;
+    fn native_get(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<jobject, Self::Error>;
     fn native_set(
         env: &JNIEnv,
         this: JObject,
         store_ptr: jlong,
         val: JObject,
     ) -> Result<(), Self::Error>;
-    fn native_mutable(
-        env: &JNIEnv,
-        this: JObject,
-        store_ptr: jlong,
-    ) -> Result<u8, Self::Error>;
+    fn native_mutable(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<u8, Self::Error>;
 }
 
 #[no_mangle]
@@ -78,9 +70,5 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeMutable(
     this: JObject,
     store_ptr: jlong,
 ) -> jboolean {
-    wrap_error!(
-        env,
-        JniGlobalImpl::native_mutable(&env, this, store_ptr),
-        0
-    )
+    wrap_error!(env, JniGlobalImpl::native_mutable(&env, this, store_ptr), 0)
 }
