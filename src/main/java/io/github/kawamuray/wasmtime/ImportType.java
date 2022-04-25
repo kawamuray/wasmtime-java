@@ -9,7 +9,6 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class ImportType {
     public enum Type {
-        UNKNOWN,
         FUNC,
         GLOBAL,
         TABLE,
@@ -17,27 +16,27 @@ public class ImportType {
     }
 
     @Getter
-    private Type type;
+    private final Type type;
 
     @Getter(AccessLevel.PACKAGE)
-    private Object typeObj;
+    private final Object typeObj;
 
     @Getter
-    private String module;
+    private final String module;
 
     @Getter
-    private String name;
+    private final String name;
 
     private void ensureType(ImportType.Type expected) {
-        if (typeObj != expected) {
+        if (type != expected) {
             throw new RuntimeException(
                 String.format("ImportType expected to have type %s but is actually %s", expected, type));
         }
     }
 
-    public Func func() {
+    public FuncType func() {
         ensureType(ImportType.Type.FUNC);
-        return (Func) typeObj;
+        return (FuncType) typeObj;
     }
 
     public Global global() {

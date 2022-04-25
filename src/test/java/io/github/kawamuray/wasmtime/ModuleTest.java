@@ -53,6 +53,7 @@ public class ModuleTest {
                 checkImportType(data, imp);
                 i += 1;
             }
+            Assert.assertEquals("Not Every Test Case was returned", testData.length, i);
         }
     }
 
@@ -62,7 +63,7 @@ public class ModuleTest {
         Class<?> typeObjClass = typeObj.getClass();
         Assert.assertNotNull("Type Object is null", typeObj);
         Assert.assertTrue(String.format("Expected Type is different. Expected %s but was %s", clazz, typeObjClass), clazz.isAssignableFrom(typeObjClass));
-        data.accept(typeObj);
+        data.verify(type, typeObj);
     }
 
     @Data
@@ -79,7 +80,6 @@ public class ModuleTest {
                 module, name, ImportType.Type.FUNC, FuncType.class,
                 mod -> {
                     Assert.assertEquals(mod.typeObj(), mod.func());
-                    Assert.assertThrows(RuntimeException.class, mod::func);
                     Assert.assertThrows(RuntimeException.class, mod::global);
                     Assert.assertThrows(RuntimeException.class, mod::memory);
                     Assert.assertThrows(RuntimeException.class, mod::table);
@@ -92,8 +92,9 @@ public class ModuleTest {
         }
 
         @SuppressWarnings("unchecked")
-        public void accept(final Object m) {
-            this.consumer.accept((T) m);
+        public void verify(final ImportType imp, final Object typeObj) {
+            this.verifyImport.accept(imp);
+            this.consumer.accept((T) typeObj);
         }
     }
 }

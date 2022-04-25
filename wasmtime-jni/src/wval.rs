@@ -89,14 +89,11 @@ fn type_from_enum<'a>(env: &'a JNIEnv, ty: &'a str) -> Result<JObject<'a>> {
         .l()?)
 }
 
-pub fn type_into_java_array<T>(env: &JNIEnv, it: T) -> Result<jobjectArray>
-    where
-        T: ExactSizeIterator<Item=ValType> + Iterator<Item=ValType>
-{
+pub fn types_into_java_array(env: &JNIEnv, it: impl ExactSizeIterator<Item=ValType>) -> Result<jobjectArray> {
     let mut vec = Vec::with_capacity(it.len());
-    for (_, result) in it.enumerate() {
-        let x = self::type_into_java(env, result);
-        vec.push(x?)
+    for result in it {
+        let x = self::type_into_java(env, result)?;
+        vec.push(x)
     }
     into_java_array(env, VAL_TYPE, vec)
 }

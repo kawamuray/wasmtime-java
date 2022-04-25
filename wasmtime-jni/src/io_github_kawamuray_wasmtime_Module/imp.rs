@@ -1,6 +1,6 @@
 use super::JniModule;
 use crate::errors::{self, Result};
-use crate::wval::type_into_java_array;
+use crate::wval::types_into_java_array;
 use crate::{interop, utils, wval};
 use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jbyteArray, jlong, jobjectArray};
@@ -20,47 +20,42 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         Ok(())
     }
 
-    #[allow(unreachable_code)]
-    fn imports<'b>(
-        env: &'b JNIEnv,
-        this: JObject,
-    ) -> std::result::Result<jobjectArray, Self::Error> {
+    fn imports(env: &JNIEnv, this: JObject) -> std::result::Result<jobjectArray, Self::Error> {
         const STRING_CLASS: &str = "java/lang/String";
         const IMPORT_TYPE: &str = "io/github/kawamuray/wasmtime/ImportType";
 
         let module = interop::get_inner::<Module>(env, this)?;
         let it = module.imports();
         let mut imports = Vec::with_capacity(it.len());
-        for (_, obj) in it.enumerate() {
+        for obj in it {
             let module = obj.module();
-            let [ty, ty_obj] = match obj.ty() {
+            let (ty, ty_obj) = match obj.ty() {
                 ExternType::Func(func) => {
-                    let results = type_into_java_array(env, func.results());
-                    let params = type_into_java_array(env, func.params());
+                    let results = types_into_java_array(env, func.results());
+                    let params = types_into_java_array(env, func.params());
 
-                    [
+                    (
                         into_java_import_type(env, "FUNC"),
                         env.new_object(
                             "io/github/kawamuray/wasmtime/FuncType",
                             format!("([L{};[L{};)V", wval::VAL_TYPE, wval::VAL_TYPE),
                             &[params?.into(), results?.into()],
                         ),
-                    ]
+                    )
                 }
                 ExternType::Global(_) => {
-                    [into_java_import_type(env, "GLOBAL"), Ok(JObject::null())]
+                    (into_java_import_type(env, "GLOBAL"), Ok(JObject::null()))
                 }
-                ExternType::Table(_) => [into_java_import_type(env, "TABLE"), Ok(JObject::null())],
+                ExternType::Table(_) => (into_java_import_type(env, "TABLE"), Ok(JObject::null())),
                 ExternType::Memory(_) => {
-                    [into_java_import_type(env, "MEMORY"), Ok(JObject::null())]
+                    (into_java_import_type(env, "MEMORY"), Ok(JObject::null()))
                 }
                 ExternType::Instance(_) => {
-                    [into_java_import_type(env, "INSTANCE"), Ok(JObject::null())]
+                    (into_java_import_type(env, "INSTANCE"), Ok(JObject::null()))
                 }
                 ExternType::Module(_) => {
-                    [into_java_import_type(env, "MODULE"), Ok(JObject::null())]
+                    (into_java_import_type(env, "MODULE"), Ok(JObject::null()))
                 }
-                _ => [into_java_import_type(env, "UNKNOWN"), Ok(JObject::null())],
             };
 
             let name = obj.name().unwrap_or_else(|| "");
