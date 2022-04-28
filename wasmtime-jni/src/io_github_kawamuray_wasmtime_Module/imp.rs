@@ -1,7 +1,7 @@
 use super::JniModule;
 use crate::errors::{self, Result};
 use crate::wval::types_into_java_array;
-use crate::{interop, utils, wval};
+use crate::{interop, utils, wmut, wval};
 use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jbyteArray, jlong, jobjectArray};
 use jni::JNIEnv;
@@ -43,9 +43,21 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                         ),
                     )
                 }
-                ExternType::Global(_) => {
-                    (into_java_import_type(env, "GLOBAL"), Ok(JObject::null()))
-                }
+                ExternType::Global(global) => (
+                    into_java_import_type(env, "GLOBAL"),
+                    env.new_object(
+                        "io/github/kawamuray/wasmtime/GlobalType",
+                        format!("(L{};L{};)V", wval::VAL_TYPE, wmut::MUT_TYPE),
+                        &[
+                            wval::type_into_java(env, global.content().to_owned())?
+                                .into_inner()
+                                .into(),
+                            wmut::mutability_into_java(env, global.mutability())?
+                                .into_inner()
+                                .into(),
+                        ],
+                    ),
+                ),
                 ExternType::Table(_) => (into_java_import_type(env, "TABLE"), Ok(JObject::null())),
                 ExternType::Memory(_) => {
                     (into_java_import_type(env, "MEMORY"), Ok(JObject::null()))

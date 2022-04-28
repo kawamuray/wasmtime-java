@@ -15,6 +15,8 @@ public class ModuleTest {
                                               + ")").getBytes();
 
     private static final byte[] IMPORT_WAT_BINARY = ("(module" +
+                                                     "  (global $m1 (import \"globals\" \"mutable\") (mut i32))\n" +
+                                                     "  (global $c2 (import \"globals\" \"const\") i64)\n" +
                                                      "  (func $hello (import \"first\" \"package\"))\n" +
                                                      "  (import \"\" \"package\" (func $world (param $p1 i32)))\n" +
                                                      "  (import \"xyz\" \"return\" (func (result i32)))\n" +
@@ -38,6 +40,8 @@ public class ModuleTest {
         ) {
             // TODO: Test other import typese
             TestImportData<?>[] testData = {
+                TestImportData.global("globals", "mutable", Val.Type.I32, Mutability.VAR),
+                TestImportData.global("globals", "const", Val.Type.I64, Mutability.CONST),
                 TestImportData.func("first", "package", new Val.Type[]{}, new Val.Type[]{}),
                 TestImportData.func("", "package", new Val.Type[]{Val.Type.I32}, new Val.Type[]{}),
                 TestImportData.func("xyz", "return", new Val.Type[]{}, new Val.Type[]{Val.Type.I32}),
@@ -60,8 +64,8 @@ public class ModuleTest {
     private <T> void checkImportType(TestImportData<T> data, ImportType type) {
         Class<T> clazz = data.getClazz();
         Object typeObj = type.typeObj();
-        Class<?> typeObjClass = typeObj.getClass();
         Assert.assertNotNull("Type Object is null", typeObj);
+        Class<?> typeObjClass = typeObj.getClass();
         Assert.assertTrue(String.format("Expected Type is different. Expected %s but was %s", clazz, typeObjClass), clazz.isAssignableFrom(typeObjClass));
         data.verify(type, typeObj);
     }
@@ -74,6 +78,22 @@ public class ModuleTest {
         private final Class<T> clazz;
         private final Consumer<ImportType> verifyImport;
         private final Consumer<T> consumer;
+
+        static TestImportData<GlobalType> global(String module, String name, Val.Type content, Mutability mutability) {
+            return new TestImportData<>(
+                module, name, ImportType.Type.GLOBAL, GlobalType.class,
+                mod -> {
+                    Assert.assertThrows(RuntimeException.class, mod::func);
+                    Assert.assertEquals(mod.typeObj(), mod.global());
+                    Assert.assertThrows(RuntimeException.class, mod::memory);
+                    Assert.assertThrows(RuntimeException.class, mod::table);
+                },
+                global -> {
+                    Assert.assertEquals(content, global.getContent());
+                    Assert.assertEquals(mutability, global.getMutability());
+                }
+            );
+        }
 
         static TestImportData<FuncType> func(String module, String name, Val.Type[] params, Val.Type[] results) {
             return new TestImportData<>(

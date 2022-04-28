@@ -39,9 +39,9 @@ public class ImportType {
         return (FuncType) typeObj;
     }
 
-    public Global global() {
+    public GlobalType global() {
         ensureType(ImportType.Type.GLOBAL);
-        return (Global) typeObj;
+        return (GlobalType) typeObj;
     }
 
     public Memory memory() {
