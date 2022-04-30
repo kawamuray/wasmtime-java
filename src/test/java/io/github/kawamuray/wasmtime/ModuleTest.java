@@ -14,10 +14,16 @@ public class ModuleTest {
                                               + "    i32.add)"
                                               + ")").getBytes();
 
+    // Required: Only one memory may be defined
+    private static final byte[] MEM2 = ("(module" +
+                                        "  (import \"mem\" \"two\" (memory $mem2 13 37))" +
+                                        ")").getBytes();
+
     private static final byte[] IMPORT_WAT_BINARY = ("(module" +
                                                      "  (global $m1 (import \"globals\" \"mutable\") (mut i32))\n" +
                                                      "  (global $c2 (import \"globals\" \"const\") i64)\n" +
                                                      "  (func $hello (import \"first\" \"package\"))\n" +
+                                                     "  (import \"env\" \"memory\" (memory $mem 1))\n" +
                                                      "  (import \"\" \"package\" (func $world (param $p1 i32)))\n" +
                                                      "  (import \"xyz\" \"return\" (func (result i32)))\n" +
                                                      "  (import \"xyz\" \"return\" (func (param i32 i32 i32 i32 i32)))\n" +
@@ -33,32 +39,48 @@ public class ModuleTest {
     }
 
     @Test
+    public void testMem2() {
+        try (
+            Engine engine = new Engine();
+            Module module = new Module(engine, MEM2)
+        ) {
+            runImportTest(module, new TestImportData[]{
+                TestImportData.memory("mem", "two", 13, 37)
+            });
+        }
+    }
+
+    @Test
     public void testAccessImports() {
         try (
             Engine engine = new Engine();
             Module module = new Module(engine, IMPORT_WAT_BINARY)
         ) {
             // TODO: Test other import typese
-            TestImportData<?>[] testData = {
+            runImportTest(module, new TestImportData[]{
                 TestImportData.global("globals", "mutable", Val.Type.I32, Mutability.VAR),
                 TestImportData.global("globals", "const", Val.Type.I64, Mutability.CONST),
                 TestImportData.func("first", "package", new Val.Type[]{}, new Val.Type[]{}),
+                TestImportData.memory("env", "memory", 1, -1),
                 TestImportData.func("", "package", new Val.Type[]{Val.Type.I32}, new Val.Type[]{}),
                 TestImportData.func("xyz", "return", new Val.Type[]{}, new Val.Type[]{Val.Type.I32}),
                 TestImportData.func("xyz", "return", new Val.Type[]{Val.Type.I32, Val.Type.I32, Val.Type.I32, Val.Type.I32, Val.Type.I32}, new Val.Type[]{})
-            };
-            int i = 0;
-            for (ImportType imp : module.imports()) {
-                Assert.assertTrue("Test Data not big enough", testData.length > i);
-                TestImportData<?> data = testData[i];
-                Assert.assertEquals(data.getModule(), imp.module());
-                Assert.assertEquals(data.getName(), imp.name());
-                Assert.assertEquals(data.getType(), imp.type());
-                checkImportType(data, imp);
-                i += 1;
-            }
-            Assert.assertEquals("Not Every Test Case was returned", testData.length, i);
+            });
         }
+    }
+
+    private void runImportTest(Module module, TestImportData<?>[] testData) {
+        int i = 0;
+        for (ImportType imp : module.imports()) {
+            Assert.assertTrue("Test Data not big enough", testData.length > i);
+            TestImportData<?> data = testData[i];
+            Assert.assertEquals(data.getModule(), imp.module());
+            Assert.assertEquals(data.getName(), imp.name());
+            Assert.assertEquals(data.getType(), imp.type());
+            checkImportType(data, imp);
+            i += 1;
+        }
+        Assert.assertEquals("Not Every Test Case was returned", testData.length, i);
     }
 
     private <T> void checkImportType(TestImportData<T> data, ImportType type) {
@@ -78,6 +100,23 @@ public class ModuleTest {
         private final Class<T> clazz;
         private final Consumer<ImportType> verifyImport;
         private final Consumer<T> consumer;
+
+        static TestImportData<MemoryType> memory(String module, String name, int min, int max) {
+            return new TestImportData<>(
+                module, name, ImportType.Type.MEMORY, MemoryType.class,
+                mod -> {
+                    Assert.assertThrows(RuntimeException.class, mod::func);
+                    Assert.assertThrows(RuntimeException.class, mod::global);
+                    Assert.assertEquals(mod.typeObj(), mod.memory());
+                    Assert.assertThrows(RuntimeException.class, mod::table);
+                },
+                mem -> {
+                    MemoryType.Limit limit = mem.limit();
+                    Assert.assertEquals(min, limit.min());
+                    Assert.assertEquals(max, limit.max());
+                }
+            );
+        }
 
         static TestImportData<GlobalType> global(String module, String name, Val.Type content, Mutability mutability) {
             return new TestImportData<>(

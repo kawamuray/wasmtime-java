@@ -13,6 +13,9 @@ public class ImportType {
         GLOBAL,
         TABLE,
         MEMORY,
+        // TODO: Currently Unsupported
+        INSTANCE,
+        MODULE
     }
 
     @Getter
@@ -44,9 +47,9 @@ public class ImportType {
         return (GlobalType) typeObj;
     }
 
-    public Memory memory() {
+    public MemoryType memory() {
         ensureType(ImportType.Type.MEMORY);
-        return (Memory) typeObj;
+        return (MemoryType) typeObj;
     }
 
     public Table table() {

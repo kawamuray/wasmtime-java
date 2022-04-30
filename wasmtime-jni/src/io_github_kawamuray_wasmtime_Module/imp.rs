@@ -3,7 +3,7 @@ use crate::errors::{self, Result};
 use crate::wval::types_into_java_array;
 use crate::{interop, utils, wmut, wval};
 use jni::objects::{JClass, JObject, JString};
-use jni::sys::{jbyteArray, jlong, jobjectArray};
+use jni::sys::{jbyteArray, jint, jlong, jobjectArray};
 use jni::JNIEnv;
 use wasmtime::{Engine, ExternType, Module};
 
@@ -59,12 +59,31 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                     ),
                 ),
                 ExternType::Table(_) => (into_java_import_type(env, "TABLE"), Ok(JObject::null())),
-                ExternType::Memory(_) => {
-                    (into_java_import_type(env, "MEMORY"), Ok(JObject::null()))
+                ExternType::Memory(mem) => {
+                    let limits = mem.limits();
+
+                    const MEMORY_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType";
+                    const LIMIT_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType$Limit";
+                    let min = limits.min() as jint;
+                    let max = match limits.max() {
+                        None => -1,
+                        Some(max) => max as jint,
+                    };
+
+                    let limit = env.new_object(LIMIT_TYPE, "(II)V", &[min.into(), max.into()]);
+                    let mem = env.new_object(
+                        MEMORY_TYPE,
+                        format!("(L{};)V", LIMIT_TYPE),
+                        &[limit?.into_inner().into()],
+                    );
+
+                    (into_java_import_type(env, "MEMORY"), mem)
                 }
+                // WebAssembly module-linking proposal
                 ExternType::Instance(_) => {
                     (into_java_import_type(env, "INSTANCE"), Ok(JObject::null()))
                 }
+                // WebAssembly module-linking proposal
                 ExternType::Module(_) => {
                     (into_java_import_type(env, "MODULE"), Ok(JObject::null()))
                 }
