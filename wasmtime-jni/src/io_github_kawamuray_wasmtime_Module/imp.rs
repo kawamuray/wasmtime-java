@@ -5,11 +5,12 @@ use crate::{interop, utils, wmut, wval};
 use jni::objects::{JClass, JObject, JString};
 use jni::sys::{jbyteArray, jint, jlong, jobjectArray};
 use jni::JNIEnv;
-use wasmtime::{Engine, ExternType, Module};
+use wasmtime::{Engine, ExternType, Limits, Module};
 
 pub(super) struct JniModuleImpl;
 
 const OBJECT_CLASS: &'static str = "java/lang/Object";
+const LIMIT_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType$Limit";
 pub const IMPORT_TYPE_CLASS: &'static str = "io/github/kawamuray/wasmtime/ImportType$Type";
 
 impl<'a> JniModule<'a> for JniModuleImpl {
@@ -58,19 +59,21 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                         ],
                     ),
                 ),
-                ExternType::Table(_) => (into_java_import_type(env, "TABLE"), Ok(JObject::null())),
+                ExternType::Table(tab) => {
+                    const TABLE_TYPE: &str = "io/github/kawamuray/wasmtime/TableType";
+                    let limit = limit_into_java(env, tab.limits());
+                    let val = wval::type_into_java(env, tab.element().to_owned());
+                    let table = env.new_object(
+                        TABLE_TYPE,
+                        format!("(L{};L{};)V", wval::VAL_TYPE, LIMIT_TYPE),
+                        &[val?.into_inner().into(), limit?.into_inner().into()],
+                    );
+
+                    (into_java_import_type(env, "TABLE"), table)
+                }
                 ExternType::Memory(mem) => {
-                    let limits = mem.limits();
-
                     const MEMORY_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType";
-                    const LIMIT_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType$Limit";
-                    let min = limits.min() as jint;
-                    let max = match limits.max() {
-                        None => -1,
-                        Some(max) => max as jint,
-                    };
-
-                    let limit = env.new_object(LIMIT_TYPE, "(II)V", &[min.into(), max.into()]);
+                    let limit = limit_into_java(env, mem.limits());
                     let mem = env.new_object(
                         MEMORY_TYPE,
                         format!("(L{};)V", LIMIT_TYPE),
@@ -142,6 +145,15 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         let module = Module::from_binary(&*interop::ref_from_raw::<Engine>(engine_ptr)?, &bytes)?;
         Ok(interop::into_raw::<Module>(module))
     }
+}
+
+fn limit_into_java<'a>(env: &'a JNIEnv, limits: &Limits) -> jni::errors::Result<JObject<'a>> {
+    let min = limits.min() as jint;
+    let max = match limits.max() {
+        None => -1,
+        Some(max) => max as jint,
+    };
+    env.new_object(LIMIT_TYPE, "(II)V", &[min.into(), max.into()])
 }
 
 pub fn into_java_import_type<'a>(env: &'a JNIEnv, ty: &'a str) -> jni::errors::Result<JObject<'a>> {

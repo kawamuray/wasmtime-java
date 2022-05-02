@@ -52,8 +52,8 @@ public class ImportType {
         return (MemoryType) typeObj;
     }
 
-    public Table table() {
+    public TableType table() {
         ensureType(ImportType.Type.TABLE);
-        return (Table) typeObj;
+        return (TableType) typeObj;
     }
 }
