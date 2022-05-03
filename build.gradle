@@ -12,12 +12,14 @@ group = 'io.github.kawamuray.wasmtime'
 version = '0.9.0'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
     implementation 'org.slf4j:slf4j-api:1.7.25'
     testImplementation 'junit:junit:4.13'
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.2.3'

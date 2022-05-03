@@ -23,6 +23,8 @@ public class Module implements Disposable {
         return new Module(newFromBinary(engine.innerPtr(), bytes));
     }
 
+    public native ImportType[] imports();
+
     @Override
     public native void dispose();
 

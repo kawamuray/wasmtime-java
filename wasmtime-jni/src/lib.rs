@@ -34,3 +34,4 @@ mod wasi_utils;
 mod wextern;
 mod wtrap;
 mod wval;
+mod wmut;

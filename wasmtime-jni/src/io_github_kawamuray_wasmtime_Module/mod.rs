@@ -22,6 +22,7 @@ macro_rules! wrap_error {
 trait JniModule<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn imports(env: &JNIEnv, this: JObject) -> Result<jobjectArray, Self::Error>;
     fn new_from_binary(
         env: &JNIEnv,
         clazz: JClass,
@@ -45,6 +46,18 @@ trait JniModule<'a> {
 #[no_mangle]
 extern "system" fn Java_io_github_kawamuray_wasmtime_Module_dispose(env: JNIEnv, this: JObject) {
     wrap_error!(env, JniModuleImpl::dispose(&env, this), Default::default())
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_imports(
+    env: JNIEnv,
+    this: JObject,
+) -> jobjectArray {
+    wrap_error!(
+        env,
+        JniModuleImpl::imports(&env, this),
+        JObject::null().into_inner()
+    )
 }
 
 #[no_mangle]

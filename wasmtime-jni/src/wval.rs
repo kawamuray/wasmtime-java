@@ -1,9 +1,12 @@
 use crate::errors::{Error, Result};
-use crate::utils;
+use crate::{utils};
 use jni::objects::JObject;
 use jni::sys::jobjectArray;
 use jni::JNIEnv;
 use wasmtime::{Val, ValType};
+use crate::utils::into_java_array;
+
+pub const VAL_TYPE: &str = "io/github/kawamuray/wasmtime/Val$Type";
 
 pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Val> {
     let ty = env
@@ -78,6 +81,33 @@ pub fn type_from_java(env: &JNIEnv, obj: JObject) -> Result<ValType> {
         "F64" => ValType::F64,
         _ => return Err(Error::UnknownEnum(name)),
     })
+}
+
+fn type_from_enum<'a>(env: &'a JNIEnv, ty: &'a str) -> Result<JObject<'a>> {
+    Ok(env
+        .get_static_field(VAL_TYPE, ty, "Lio/github/kawamuray/wasmtime/Val$Type;")?
+        .l()?)
+}
+
+pub fn types_into_java_array(env: &JNIEnv, it: impl ExactSizeIterator<Item=ValType>) -> Result<jobjectArray> {
+    let mut vec = Vec::with_capacity(it.len());
+    for result in it {
+        let x = self::type_into_java(env, result)?;
+        vec.push(x)
+    }
+    into_java_array(env, VAL_TYPE, vec)
+}
+
+pub fn type_into_java<'a>(env: &'a JNIEnv, val: ValType) -> Result<JObject<'a>> {
+    match val {
+        ValType::I32 => type_from_enum(env, "I32"),
+        ValType::I64 => type_from_enum(env, "I64"),
+        ValType::F32 => type_from_enum(env, "F32"),
+        ValType::F64 => type_from_enum(env, "F64"),
+        ValType::V128 => type_from_enum(env, "V128"),
+        ValType::ExternRef => type_from_enum(env, "EXTERN_REF"),
+        ValType::FuncRef => type_from_enum(env, "FUNC_REF"),
+    }
 }
 
 pub fn types_from_java(env: &JNIEnv, array: jobjectArray) -> Result<Vec<ValType>> {
