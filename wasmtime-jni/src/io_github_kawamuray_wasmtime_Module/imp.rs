@@ -15,7 +15,7 @@ pub const IMPORT_TYPE_CLASS: &'static str = "io/github/kawamuray/wasmtime/Import
 pub const EXPORT_TYPE_CLASS: &'static str = "io/github/kawamuray/wasmtime/ExportType$Type";
 pub const STRING_CLASS: &str = "java/lang/String";
 
-macro_rules! meow {
+macro_rules! match_extern_type {
     ($into_type:ident, $ty:expr, $env:ident) => {{
         match $ty {
             ExternType::Func(func) => {
@@ -91,9 +91,8 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         let it = module.exports();
         let mut exports = Vec::with_capacity(it.len());
         for obj in it {
-            //     let obj: ExportType = obj;
             let name = env.new_string(obj.name());
-            let (ty, ty_obj) = meow!(into_java_export_type, obj.ty(), env);
+            let (ty, ty_obj) = match_extern_type!(into_java_export_type, obj.ty(), env);
             let export = env.new_object(
                 EXPORT_TYPE,
                 format!(
@@ -119,7 +118,7 @@ impl<'a> JniModule<'a> for JniModuleImpl {
         let mut imports = Vec::with_capacity(it.len());
         for obj in it {
             let module = obj.module();
-            let (ty, ty_obj) = meow!(into_java_import_type, obj.ty(), env);
+            let (ty, ty_obj) = match_extern_type!(into_java_import_type, obj.ty(), env);
 
             let name = obj.name().unwrap_or_else(|| "");
             let import = env.new_object(
