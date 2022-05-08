@@ -33,6 +33,15 @@ public class ModuleTest {
                                                      "  (func (export \"run\") (call $hello))\n" +
                                                      ")").getBytes();
 
+    private static final byte[] EXPORT_WAT_BINARY = ("(module"
+                                                     + "  (memory (export \"memmy\") 20 22)\n"
+                                                     + "  (table (export \"tabby\") 0 1 funcref)\n"
+                                                     + "  (export \"globby\" (global 0)) (global i32 (i32.const 0))\n"
+                                                     + "  (func (export \"life\") (param $p1 i32) (param $p2 i32) (result i32)"
+                                                     + "    (i32.const 42)\n"
+                                                     + "  )"
+                                                     + ")").getBytes();
+
     @Test
     public void testCreateDispose() {
         try (Engine engine = new Engine()) {
@@ -75,6 +84,43 @@ public class ModuleTest {
         }
     }
 
+    @Test
+    public void testAccessExport() {
+        try (
+            Engine engine = new Engine();
+            Module module = new Module(engine, EXPORT_WAT_BINARY)
+        ) {
+            runExportTest(module, new TestExportData[]{
+                TestExportData.memory("memmy", 20, 22),
+                TestExportData.table("tabby", Val.Type.FUNC_REF, 0, 1),
+                TestExportData.global("globby", Val.Type.I32, Mutability.CONST),
+                TestExportData.func("life", new Val.Type[]{Val.Type.I32, Val.Type.I32}, new Val.Type[]{Val.Type.I32}),
+            });
+        }
+    }
+
+    private void runExportTest(Module module, TestExportData<?>[] testData) {
+        int i = 0;
+        for (ExportType export : module.exports()) {
+            Assert.assertTrue("Test Data not big enough", testData.length > i);
+            TestExportData<?> data = testData[i];
+            Assert.assertEquals(data.getName(), export.name());
+            Assert.assertEquals(data.getType(), export.type());
+            checkExportType(data, export);
+            i += 1;
+        }
+        Assert.assertEquals("Not Every Test Case was returned", testData.length, i);
+    }
+
+    private <T> void checkExportType(TestExportData<T> data, ExportType type) {
+        Class<T> clazz = data.getClazz();
+        Object typeObj = type.typeObj();
+        Assert.assertNotNull("Type Object is null", typeObj);
+        Class<?> typeObjClass = typeObj.getClass();
+        Assert.assertTrue(String.format("Expected Type is different. Expected %s but was %s", clazz, typeObjClass), clazz.isAssignableFrom(typeObjClass));
+        data.verify(type, typeObj);
+    }
+
     private void runImportTest(Module module, TestImportData<?>[] testData) {
         int i = 0;
         for (ImportType imp : module.imports()) {
@@ -96,6 +142,89 @@ public class ModuleTest {
         Class<?> typeObjClass = typeObj.getClass();
         Assert.assertTrue(String.format("Expected Type is different. Expected %s but was %s", clazz, typeObjClass), clazz.isAssignableFrom(typeObjClass));
         data.verify(type, typeObj);
+    }
+
+    @Data
+    private static class TestExportData<T> {
+        private final String name;
+        private final ExportType.Type type;
+        private final Class<T> clazz;
+        private final Consumer<ExportType> verifyExport;
+        private final Consumer<T> consumer;
+
+        public static TestExportData<FuncType> func(String name, Val.Type[] params, Val.Type[] results) {
+            return new TestExportData<>(
+                name, ExportType.Type.FUNC, FuncType.class,
+                mod -> {
+                    Assert.assertEquals(mod.typeObj(), mod.func());
+                    Assert.assertThrows(RuntimeException.class, mod::global);
+                    Assert.assertThrows(RuntimeException.class, mod::memory);
+                    Assert.assertThrows(RuntimeException.class, mod::table);
+                },
+                func -> {
+                    Assert.assertArrayEquals(params, func.getParams());
+                    Assert.assertArrayEquals(results, func.getResults());
+                }
+            );
+        }
+
+        public static TestExportData<MemoryType> memory(String name, int min, int max) {
+            return new TestExportData<>(
+                name, ExportType.Type.MEMORY, MemoryType.class,
+                mod -> {
+                    Assert.assertThrows(RuntimeException.class, mod::func);
+                    Assert.assertThrows(RuntimeException.class, mod::global);
+                    Assert.assertEquals(mod.typeObj(), mod.memory());
+                    Assert.assertThrows(RuntimeException.class, mod::table);
+                },
+                mem -> {
+                    MemoryType.Limit limit = mem.limit();
+                    Assert.assertEquals(min, limit.min());
+                    Assert.assertEquals(max, limit.max());
+                }
+            );
+        }
+
+        public static TestExportData<TableType> table(String name, Val.Type content, int min, int max) {
+            return new TestExportData<>(
+                name, ExportType.Type.TABLE, TableType.class,
+                mod -> {
+                    Assert.assertThrows(RuntimeException.class, mod::func);
+                    Assert.assertThrows(RuntimeException.class, mod::global);
+                    Assert.assertThrows(RuntimeException.class, mod::memory);
+                    Assert.assertEquals(mod.typeObj(), mod.table());
+                },
+                table -> {
+                    Assert.assertEquals(content, table.element());
+
+                    MemoryType.Limit limit = table.limit();
+                    Assert.assertEquals(min, limit.min());
+                    Assert.assertEquals(max, limit.max());
+                }
+            );
+        }
+
+        public static TestExportData<GlobalType> global(String name, Val.Type content, Mutability mutability) {
+            return new TestExportData<>(
+                    name, ExportType.Type.GLOBAL, GlobalType.class,
+                    mod -> {
+                        Assert.assertThrows(RuntimeException.class, mod::func);
+                        Assert.assertEquals(mod.typeObj(), mod.global());
+                        Assert.assertThrows(RuntimeException.class, mod::memory);
+                        Assert.assertThrows(RuntimeException.class, mod::table);
+                    },
+                    global -> {
+                        Assert.assertEquals(content, global.getContent());
+                        Assert.assertEquals(mutability, global.getMutability());
+                    }
+                );
+            }
+
+        @SuppressWarnings("unchecked")
+        public void verify(final ExportType imp, final Object typeObj) {
+            this.verifyExport.accept(imp);
+            this.consumer.accept((T) typeObj);
+        }
     }
 
     @Data

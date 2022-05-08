@@ -25,6 +25,8 @@ public class Module implements Disposable {
 
     public native ImportType[] imports();
 
+    public native ExportType[] exports();
+
     @Override
     public native void dispose();
 
