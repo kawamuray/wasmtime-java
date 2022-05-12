@@ -8,17 +8,8 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class ExportType {
-    public enum Type {
-        FUNC,
-        GLOBAL,
-        TABLE,
-        MEMORY,
-        // TODO: Currently Unsupported
-        INSTANCE,
-        MODULE;
-    }
     @Getter
-    private final Type type;
+    private final ExternType type;
 
     @Getter(AccessLevel.PACKAGE)
     private final Object typeObj;
@@ -26,7 +17,7 @@ public class ExportType {
     @Getter
     private final String name;
 
-    private void ensureType(Type expected) {
+    private void ensureType(ExternType expected) {
         if (type != expected) {
             throw new RuntimeException(
                 String.format("ImportType expected to have type %s but is actually %s", expected, type));
@@ -34,22 +25,22 @@ public class ExportType {
     }
 
     public FuncType func() {
-        ensureType(ExportType.Type.FUNC);
+        ensureType(ExternType.FUNC);
         return (FuncType) typeObj;
     }
 
     public GlobalType global() {
-        ensureType(ExportType.Type.GLOBAL);
+        ensureType(ExternType.GLOBAL);
         return (GlobalType) typeObj;
     }
 
     public MemoryType memory() {
-        ensureType(ExportType.Type.MEMORY);
+        ensureType(ExternType.MEMORY);
         return (MemoryType) typeObj;
     }
 
     public TableType table() {
-        ensureType(ExportType.Type.TABLE);
+        ensureType(ExternType.TABLE);
         return (TableType) typeObj;
     }
 }

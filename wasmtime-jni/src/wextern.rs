@@ -1,8 +1,14 @@
 use crate::errors::{Error, Result};
-use crate::{interop, utils};
+use crate::{interop, utils, wval};
 use jni::objects::JObject;
 use jni::JNIEnv;
-use wasmtime::{Extern, Func, Global, Memory, Table};
+use jni::sys::jint;
+use wasmtime::{Extern, ExternType, Func, Global, Limits, Memory, Table};
+use crate::wmut::{MUT_TYPE, mutability_into_java};
+use crate::wval::VAL_TYPE;
+
+pub const EXTERN_TYPE_CLASS: &'static str = "io/github/kawamuray/wasmtime/ExternType";
+const LIMIT_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType$Limit";
 
 pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Extern> {
     let ty = env
@@ -96,6 +102,68 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
     })
 }
 
+pub fn type_into_java<'a>(env: &'a JNIEnv, ty: ExternType) -> Result<(JObject<'a>, JObject<'a>)> {
+    let (ty, ty_obj) = match ty {
+        ExternType::Func(func) => {
+            let results = wval::types_into_java_array(env, func.results());
+            let params = wval::types_into_java_array(env, func.params());
+
+            (
+                into_java_extern_type(env, "FUNC"),
+                env.new_object(
+                    "io/github/kawamuray/wasmtime/FuncType",
+                    format!("([L{};[L{};)V", VAL_TYPE, VAL_TYPE),
+                    &[params?.into(), results?.into()],
+                ),
+            )
+        }
+        ExternType::Global(global) => (
+            into_java_extern_type(env, "GLOBAL"),
+            env.new_object(
+                "io/github/kawamuray/wasmtime/GlobalType",
+                format!("(L{};L{};)V", VAL_TYPE, MUT_TYPE),
+                &[
+                    wval::type_into_java(env, global.content().to_owned())?
+                        .into_inner()
+                        .into(),
+                    mutability_into_java(env, global.mutability())?
+                        .into_inner()
+                        .into(),
+                ],
+            ),
+        ),
+        ExternType::Table(tab) => {
+            const TABLE_TYPE: &str = "io/github/kawamuray/wasmtime/TableType";
+            let limit = limit_into_java(env, tab.limits());
+            let val = wval::type_into_java(env, tab.element().to_owned());
+            let table = env.new_object(
+                TABLE_TYPE,
+                format!("(L{};L{};)V", VAL_TYPE, LIMIT_TYPE),
+                &[val?.into_inner().into(), limit?.into_inner().into()],
+            );
+
+            (into_java_extern_type(env, "TABLE"), table)
+        }
+        ExternType::Memory(mem) => {
+            const MEMORY_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType";
+            let limit = limit_into_java(env, mem.limits());
+            let mem = env.new_object(
+                MEMORY_TYPE,
+                format!("(L{};)V", LIMIT_TYPE),
+                &[limit?.into_inner().into()],
+            );
+
+            (into_java_extern_type(env, "MEMORY"), mem)
+        }
+        // WebAssembly module-linking proposal
+        ExternType::Instance(_) => (into_java_extern_type(env, "INSTANCE"), Ok(JObject::null())),
+        // WebAssembly module-linking proposal
+        ExternType::Module(_) => (into_java_extern_type(env, "MODULE"), Ok(JObject::null())),
+    };
+
+    Ok((ty?, ty_obj?))
+}
+
 pub fn unknown<'a>(env: &'a JNIEnv) -> Result<JObject<'a>> {
     Ok(env
         .get_static_field(
@@ -104,4 +172,18 @@ pub fn unknown<'a>(env: &'a JNIEnv) -> Result<JObject<'a>> {
             "Lio/github/kawamuray/wasmtime/Extern;",
         )?
         .l()?)
+}
+
+fn limit_into_java<'a>(env: &'a JNIEnv, limits: &Limits) -> jni::errors::Result<JObject<'a>> {
+    let min = limits.min() as jint;
+    let max = match limits.max() {
+        None => -1,
+        Some(max) => max as jint,
+    };
+    env.new_object(LIMIT_TYPE, "(II)V", &[min.into(), max.into()])
+}
+
+fn into_java_extern_type<'a>(env: &'a JNIEnv, ty: &'a str) -> jni::errors::Result<JObject<'a>> {
+    env.get_static_field(EXTERN_TYPE_CLASS, ty, format!("L{};", EXTERN_TYPE_CLASS))?
+        .l()
 }

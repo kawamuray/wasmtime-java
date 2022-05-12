@@ -147,14 +147,14 @@ public class ModuleTest {
     @Data
     private static class TestExportData<T> {
         private final String name;
-        private final ExportType.Type type;
+        private final ExternType type;
         private final Class<T> clazz;
         private final Consumer<ExportType> verifyExport;
         private final Consumer<T> consumer;
 
         public static TestExportData<FuncType> func(String name, Val.Type[] params, Val.Type[] results) {
             return new TestExportData<>(
-                name, ExportType.Type.FUNC, FuncType.class,
+                name, ExternType.FUNC, FuncType.class,
                 mod -> {
                     Assert.assertEquals(mod.typeObj(), mod.func());
                     Assert.assertThrows(RuntimeException.class, mod::global);
@@ -170,7 +170,7 @@ public class ModuleTest {
 
         public static TestExportData<MemoryType> memory(String name, int min, int max) {
             return new TestExportData<>(
-                name, ExportType.Type.MEMORY, MemoryType.class,
+                name, ExternType.MEMORY, MemoryType.class,
                 mod -> {
                     Assert.assertThrows(RuntimeException.class, mod::func);
                     Assert.assertThrows(RuntimeException.class, mod::global);
@@ -187,7 +187,7 @@ public class ModuleTest {
 
         public static TestExportData<TableType> table(String name, Val.Type content, int min, int max) {
             return new TestExportData<>(
-                name, ExportType.Type.TABLE, TableType.class,
+                name, ExternType.TABLE, TableType.class,
                 mod -> {
                     Assert.assertThrows(RuntimeException.class, mod::func);
                     Assert.assertThrows(RuntimeException.class, mod::global);
@@ -206,7 +206,7 @@ public class ModuleTest {
 
         public static TestExportData<GlobalType> global(String name, Val.Type content, Mutability mutability) {
             return new TestExportData<>(
-                    name, ExportType.Type.GLOBAL, GlobalType.class,
+                    name, ExternType.GLOBAL, GlobalType.class,
                     mod -> {
                         Assert.assertThrows(RuntimeException.class, mod::func);
                         Assert.assertEquals(mod.typeObj(), mod.global());
@@ -231,14 +231,14 @@ public class ModuleTest {
     private static class TestImportData<T> {
         private final String module;
         private final String name;
-        private final ImportType.Type type;
+        private final ExternType type;
         private final Class<T> clazz;
         private final Consumer<ImportType> verifyImport;
         private final Consumer<T> consumer;
 
         static TestImportData<MemoryType> memory(String module, String name, int min, int max) {
             return new TestImportData<>(
-                module, name, ImportType.Type.MEMORY, MemoryType.class,
+                module, name, ExternType.MEMORY, MemoryType.class,
                 mod -> {
                     Assert.assertThrows(RuntimeException.class, mod::func);
                     Assert.assertThrows(RuntimeException.class, mod::global);
@@ -255,7 +255,7 @@ public class ModuleTest {
 
         static TestImportData<GlobalType> global(String module, String name, Val.Type content, Mutability mutability) {
             return new TestImportData<>(
-                module, name, ImportType.Type.GLOBAL, GlobalType.class,
+                module, name, ExternType.GLOBAL, GlobalType.class,
                 mod -> {
                     Assert.assertThrows(RuntimeException.class, mod::func);
                     Assert.assertEquals(mod.typeObj(), mod.global());
@@ -271,7 +271,7 @@ public class ModuleTest {
 
         static TestImportData<FuncType> func(String module, String name, Val.Type[] params, Val.Type[] results) {
             return new TestImportData<>(
-                module, name, ImportType.Type.FUNC, FuncType.class,
+                module, name, ExternType.FUNC, FuncType.class,
                 mod -> {
                     Assert.assertEquals(mod.typeObj(), mod.func());
                     Assert.assertThrows(RuntimeException.class, mod::global);
@@ -287,7 +287,7 @@ public class ModuleTest {
 
         public static TestImportData<TableType> table(String module, String name, Val.Type content, int min, int max) {
             return new TestImportData<>(
-                module, name, ImportType.Type.TABLE, TableType.class,
+                module, name, ExternType.TABLE, TableType.class,
                 mod -> {
                     Assert.assertThrows(RuntimeException.class, mod::func);
                     Assert.assertThrows(RuntimeException.class, mod::global);
