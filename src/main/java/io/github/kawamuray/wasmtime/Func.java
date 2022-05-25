@@ -1,16 +1,26 @@
 package io.github.kawamuray.wasmtime;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * A WebAssembly function which can be called.
+ *
+ * This type is either provided by a WebAssembly Module or implemented in Java as a Host-function.
+ *
+ * A Func "belongs" to the store that it was originally created within. Operations on a Func only work with the store
+ * it belongs to. Otherwise an exception will be thrown.
+ * 
+  * @see <a href="https://docs.wasmtime.dev/api/wasmtime/struct.Func.html">Rust Documentation</a>
+  */
 @Slf4j
 @Accessors(fluent = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)

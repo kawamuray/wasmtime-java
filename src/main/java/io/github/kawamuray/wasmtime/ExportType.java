@@ -7,15 +7,12 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = true)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class ImportType {
+public class ExportType {
     @Getter
     private final ExternType type;
 
     @Getter(AccessLevel.PACKAGE)
     private final Object typeObj;
-
-    @Getter
-    private final String module;
 
     @Getter
     private final String name;

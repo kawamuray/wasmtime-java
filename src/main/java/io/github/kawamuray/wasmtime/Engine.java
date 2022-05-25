@@ -6,6 +6,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
+/**
+ * An Engine which is a global context for compilation and management of wasm modules.
+ * <p>
+ * Engines store global configuration preferences such as compilation settings, enabled features, etc.
+ * You'll likely only need at most one of these for a program.
+ *
+ * @see <a href="https://docs.wasmtime.dev/api/wasmtime/struct.Engine.html">Rust Documentation</a>
+ */
 @Accessors(fluent = true)
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
