@@ -9,11 +9,10 @@ import lombok.experimental.Accessors;
 /**
  * An Engine which is a global context for compilation and management of wasm modules.
  * <p>
- * An engine can be safely shared across threads and is a cheap cloneable handle to the actual engine.
- * The engine itself will be deallocated once all references to it have gone away.
- * <p>
  * Engines store global configuration preferences such as compilation settings, enabled features, etc.
  * You'll likely only need at most one of these for a program.
+ *
+ * @see <a href="https://docs.wasmtime.dev/api/wasmtime/struct.Engine.html">Rust Documentation</a>
  */
 @Accessors(fluent = true)
 @EqualsAndHashCode
