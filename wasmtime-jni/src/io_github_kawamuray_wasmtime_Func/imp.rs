@@ -78,18 +78,17 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
             let wasm_val = wval::from_java(env, val?)?;
             wasm_params.push(wasm_val);
         }
+        let mut wasm_results =
+            vec![unsafe { std::mem::zeroed() }; func.ty(&mut *store).results().len()];
 
-        let results = match func.call(&mut *store, &wasm_params) {
-            Ok(results) => results,
-            Err(e) => {
-                return Err(match e.downcast::<Trap>() {
-                    Ok(trap) => errors::Error::WasmTrap(trap),
-                    Err(e) => e.into(),
-                });
-            }
-        };
+        if let Err(e) = func.call(&mut *store, &wasm_params, &mut wasm_results) {
+            return Err(match e.downcast::<Trap>() {
+                Ok(trap) => errors::Error::WasmTrap(trap),
+                Err(e) => e.into(),
+            });
+        }
 
-        let java_results = results
+        let java_results = wasm_results
             .into_iter()
             .map(|wasm_val| wval::into_java(env, wasm_val.clone()))
             .collect::<Result<Vec<_>, _>>()?;

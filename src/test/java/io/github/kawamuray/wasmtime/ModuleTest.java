@@ -117,9 +117,8 @@ public class ModuleTest {
                     Assert.assertThrows(RuntimeException.class, mod::table);
                 },
                 mem -> {
-                    MemoryType.Limit limit = mem.limit();
-                    Assert.assertEquals(min, limit.min());
-                    Assert.assertEquals(max, limit.max());
+                    Assert.assertEquals(min, mem.minimum());
+                    Assert.assertEquals(max, mem.maximum());
                 }
             );
         }
@@ -167,10 +166,8 @@ public class ModuleTest {
                 },
                 table -> {
                     Assert.assertEquals(content, table.element());
-
-                    MemoryType.Limit limit = table.limit();
-                    Assert.assertEquals(min, limit.min());
-                    Assert.assertEquals(max, limit.max());
+                    Assert.assertEquals(min, table.minimum());
+                    Assert.assertEquals(max, table.maximum());
                 }
             );
         }

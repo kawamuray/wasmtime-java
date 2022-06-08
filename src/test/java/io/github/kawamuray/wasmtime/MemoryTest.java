@@ -86,7 +86,7 @@ public class MemoryTest {
 
     @Test
     public void testGrow() {
-        try (Memory mem = new Memory(store, new MemoryType(new MemoryType.Limit(1024)))) {
+        try (Memory mem = new Memory(store, new MemoryType(1024, false))) {
             long before = mem.size(store);
             mem.grow(store, 64);
             long after = mem.size(store);

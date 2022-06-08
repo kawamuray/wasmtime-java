@@ -133,7 +133,6 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         let strategy: Strategy = match enum_string.as_str() {
             "AUTO" => Strategy::Auto,
             "CRANELIFT" => Strategy::Cranelift,
-            "LIGHTBEAM" => Strategy::Lightbeam,
             _ => Strategy::Auto,
         };
         config.strategy(strategy)?;

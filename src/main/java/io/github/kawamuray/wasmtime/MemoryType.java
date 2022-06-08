@@ -6,17 +6,13 @@ import lombok.experimental.Accessors;
 
 @Value
 @Accessors(fluent = true)
+@AllArgsConstructor
 public class MemoryType {
-    @Value
-    @AllArgsConstructor
-    public static class Limit {
-        int min;
-        int max; // optional
+    long minimum;
+    long maximum;
+    boolean is64;
 
-        public Limit(int min) {
-            this(min, -1);
-        }
+    public MemoryType(long minimum, boolean is64) {
+        this(minimum, -1, is64);
     }
-
-    Limit limit;
 }

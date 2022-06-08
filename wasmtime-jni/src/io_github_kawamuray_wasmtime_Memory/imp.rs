@@ -3,9 +3,9 @@ use crate::errors::{self, Result};
 use crate::interop;
 use crate::store::StoreData;
 use jni::objects::{JClass, JObject};
-use jni::sys::{jint, jlong, jobject};
+use jni::sys::{jboolean, jint, jlong, jobject, JNI_TRUE};
 use jni::JNIEnv;
-use wasmtime::{Limits, Memory, MemoryType, Store};
+use wasmtime::{Memory, MemoryType, Store};
 
 pub(super) struct JniMemoryImpl;
 
@@ -42,14 +42,17 @@ impl<'a> JniMemory<'a> for JniMemoryImpl {
         _env: &JNIEnv,
         _clazz: JClass,
         store_ptr: jlong,
-        min: jint,
-        max: jint,
+        min: jlong,
+        max: jlong,
+        is_64: jboolean,
     ) -> Result<jlong, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let ty = MemoryType::new(Limits::new(
-            min as u32,
-            if max < 0 { None } else { Some(max as u32) },
-        ));
+        let max = if max < 0 { None } else { Some(max as u64) };
+        let ty = if is_64 == JNI_TRUE {
+            MemoryType::new64(min as u64, max)
+        } else {
+            MemoryType::new(min as u32, max.map(|v| v as u32))
+        };
         let mem = Memory::new(&mut *store, ty)?;
         Ok(interop::into_raw::<Memory>(mem))
     }
@@ -64,10 +67,10 @@ impl<'a> JniMemory<'a> for JniMemoryImpl {
         env: &JNIEnv,
         this: JObject,
         store_ptr: jlong,
-        delta_pages: jint,
+        delta_pages: jlong,
     ) -> Result<jint, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
         let mem = interop::get_inner::<Memory>(&env, this)?;
-        Ok(mem.grow(&mut *store, delta_pages as u32)? as jint)
+        Ok(mem.grow(&mut *store, delta_pages as u64)? as jint)
     }
 }

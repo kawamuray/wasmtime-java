@@ -33,15 +33,16 @@ trait JniMemory<'a> {
         env: &JNIEnv,
         this: JObject,
         store_ptr: jlong,
-        delta_pages: jint,
+        delta_pages: jlong,
     ) -> Result<jint, Self::Error>;
     fn native_size(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<jint, Self::Error>;
     fn new_memory(
         env: &JNIEnv,
         clazz: JClass,
-        store_ptr: jlong,
-        min: jint,
-        max: jint,
+        inner_ptr: jlong,
+        minimum: jlong,
+        maximum: jlong,
+        is64: jboolean,
     ) -> Result<jlong, Self::Error>;
 }
 
@@ -81,7 +82,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeGrow(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
-    delta_pages: jint,
+    delta_pages: jlong,
 ) -> jint {
     wrap_error!(
         env,
@@ -107,13 +108,14 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeSize(
 extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_newMemory(
     env: JNIEnv,
     clazz: JClass,
-    store_ptr: jlong,
-    min: jint,
-    max: jint,
+    inner_ptr: jlong,
+    minimum: jlong,
+    maximum: jlong,
+    is64: jboolean,
 ) -> jlong {
     wrap_error!(
         env,
-        JniMemoryImpl::new_memory(&env, clazz, store_ptr, min, max),
+        JniMemoryImpl::new_memory(&env, clazz, inner_ptr, minimum, maximum, is64),
         Default::default()
     )
 }
