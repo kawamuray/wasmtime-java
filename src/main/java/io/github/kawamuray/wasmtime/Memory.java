@@ -11,7 +11,7 @@ public class Memory implements Disposable {
     private long innerPtr;
 
     public <T> Memory(Store<T> store, MemoryType type) {
-        this(newMemory(store.innerPtr(), type.limit().min(), type.limit().max()));
+        this(newMemory(store.innerPtr(), type.minimum(), type.maximum(), type.is64()));
     }
 
     public <T> ByteBuffer buffer(Store<T> store) {
@@ -26,14 +26,14 @@ public class Memory implements Disposable {
         return nativeSize(store.innerPtr());
     }
 
-    public <T> int grow(Store<T> store, int delta_pages) {
-        return nativeGrow(store.innerPtr(), delta_pages);
+    public <T> int grow(Store<T> store, long deltaPages) {
+        return nativeGrow(store.innerPtr(), deltaPages);
     }
 
     @Override
     public native void dispose();
 
-    private static native long newMemory(long storePtr, int min, int max);
+    private static native long newMemory(long innerPtr, long minimum, long maximum, boolean is64);
 
     private native ByteBuffer nativeBuffer(long storePtr);
 
@@ -41,5 +41,5 @@ public class Memory implements Disposable {
 
     private native int nativeSize(long storePtr);
 
-    private native int nativeGrow(long storePtr, int delta_pages);
+    private native int nativeGrow(long storePtr, long deltaPages);
 }

@@ -40,8 +40,8 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
         use Error::*;
         let (ex_class, msg) = match &self {
             Jni(e) => {
-                use jni::errors::ErrorKind::*;
-                match e.kind() {
+                use jni::errors::Error::*;
+                match e {
                     JavaException => return env.exception_occurred(),
                     NullPtr(_) | NullDeref(_) => {
                         ("java/lang/NullPointerException", self.to_string())

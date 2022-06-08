@@ -1,6 +1,6 @@
 use crate::errors::Result;
 use jni::descriptors::Desc;
-use jni::errors::Result as JniResult;
+use jni::errors::{Error, Result as JniResult};
 use jni::objects::{JFieldID, JObject};
 use jni::signature::{JavaType, Primitive};
 use jni::strings::JNIString;
@@ -96,7 +96,7 @@ pub fn ref_from_raw<'a, T>(ptr: jlong) -> Result<ReentrantReference<'a, T>> {
 macro_rules! non_null {
     ( $obj:expr, $ctx:expr ) => {
         if $obj.is_null() {
-            return Err(jni::errors::ErrorKind::NullPtr($ctx).into());
+            return Err(jni::errors::Error::NullPtr($ctx).into());
         } else {
             $obj
         }
@@ -124,7 +124,7 @@ where
         .get_field_unchecked(obj, field_id, JavaType::Primitive(Primitive::Long))?
         .j()? as *mut ReentrantLock<T>;
     if !field_ptr.is_null() {
-        return Err(format!("field already set: {}", field.as_ref()).into());
+        return Err(Error::FieldAlreadySet(field.as_ref().to_string()));
     }
 
     let ptr = into_raw(rust_object);
