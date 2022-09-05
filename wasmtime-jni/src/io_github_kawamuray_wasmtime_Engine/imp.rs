@@ -30,4 +30,10 @@ impl<'a> JniEngine<'a> for JniEngineImpl {
         let engine = Engine::new(&config)?;
         Ok(interop::into_raw::<Engine>(engine))
     }
+
+    fn increment_epoch(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
+        let engine = interop::get_inner::<Engine>(&env, this)?;
+        engine.increment_epoch();
+        Ok(())
+    }
 }

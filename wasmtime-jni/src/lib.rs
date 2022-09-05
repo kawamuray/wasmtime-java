@@ -15,8 +15,6 @@ mod io_github_kawamuray_wasmtime_Global;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Instance;
 #[allow(non_snake_case)]
-mod io_github_kawamuray_wasmtime_InterruptHandle;
-#[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Linker;
 #[allow(non_snake_case)]
 mod io_github_kawamuray_wasmtime_Memory;
@@ -32,6 +30,6 @@ mod store;
 pub(crate) mod utils;
 mod wasi_utils;
 mod wextern;
+mod wmut;
 mod wtrap;
 mod wval;
-mod wmut;

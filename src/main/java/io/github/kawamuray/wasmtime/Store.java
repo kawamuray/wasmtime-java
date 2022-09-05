@@ -50,9 +50,7 @@ public class Store<T> implements Disposable {
         return (T) storedData();
     }
 
-    public InterruptHandle interruptHandle() {
-        return new InterruptHandle(interruptHandlePtr());
-    }
+    public native void setEpochDeadline(long ticksBeyondCurrent);
 
     @Override
     public native void dispose();
@@ -64,6 +62,4 @@ public class Store<T> implements Disposable {
     private native Object storedData();
 
     public native void gc();
-
-    private native long interruptHandlePtr();
 }

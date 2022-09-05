@@ -13,9 +13,6 @@ public class ImportType {
         GLOBAL,
         TABLE,
         MEMORY,
-        // TODO: Currently Unsupported
-        INSTANCE,
-        MODULE
     }
 
     @Getter

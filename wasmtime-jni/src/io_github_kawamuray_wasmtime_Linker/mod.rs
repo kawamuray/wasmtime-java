@@ -12,7 +12,10 @@ macro_rules! wrap_error {
         match $body {
             Ok(v) => v,
             Err(e) => {
-                $env.throw(e).expect("error in throwing exception");
+                if let Err(err) = $env.throw(e) {
+                    $env.exception_describe().ok();
+                    panic!("error in throwing exception: {}", err);
+                }
                 $default
             }
         }

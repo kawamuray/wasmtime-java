@@ -5,7 +5,7 @@ use crate::store::StoreData;
 use jni::objects::{JClass, JObject};
 use jni::sys::*;
 use jni::{self, JNIEnv};
-use wasmtime::{Engine, InterruptHandle, Store};
+use wasmtime::{Engine, Store};
 use wasmtime_wasi::WasiCtx;
 
 pub(super) struct JniStoreImpl;
@@ -62,9 +62,13 @@ impl<'a> JniStore<'a> for JniStoreImpl {
         Ok(())
     }
 
-    fn interrupt_handle_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error> {
-        let store = interop::get_inner::<Store<StoreData>>(&env, this)?;
-        let interrupt_handle = store.interrupt_handle()?;
-        Ok(interop::into_raw::<InterruptHandle>(interrupt_handle))
+    fn set_epoch_deadline(
+        env: &JNIEnv,
+        this: JObject,
+        ticks_beyond_current: jlong,
+    ) -> Result<(), Self::Error> {
+        let mut store = interop::get_inner::<Store<StoreData>>(&env, this)?;
+        store.set_epoch_deadline(ticks_beyond_current as u64);
+        Ok(())
     }
 }
