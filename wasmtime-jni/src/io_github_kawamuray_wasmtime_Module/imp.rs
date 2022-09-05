@@ -86,17 +86,8 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                     );
                     (into_java_import_type(env, "MEMORY"), mem)
                 }
-                // WebAssembly module-linking proposal
-                ExternType::Instance(_) => {
-                    (into_java_import_type(env, "INSTANCE"), Ok(JObject::null()))
-                }
-                // WebAssembly module-linking proposal
-                ExternType::Module(_) => {
-                    (into_java_import_type(env, "MODULE"), Ok(JObject::null()))
-                }
             };
 
-            let name = obj.name().unwrap_or_else(|| "");
             let import = env.new_object(
                 IMPORT_TYPE,
                 format!(
@@ -107,7 +98,7 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                     ty?.into_inner().into(),
                     ty_obj?.into_inner().into(),
                     env.new_string(module)?.into(),
-                    env.new_string(name)?.into(),
+                    env.new_string(obj.name())?.into(),
                 ],
             )?;
 

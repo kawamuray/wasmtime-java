@@ -12,7 +12,10 @@ macro_rules! wrap_error {
         match $body {
             Ok(v) => v,
             Err(e) => {
-                $env.throw(e).expect("error in throwing exception");
+                if let Err(err) = $env.throw(e) {
+                    $env.exception_describe().ok();
+                    panic!("error in throwing exception: {}", err);
+                }
                 $default
             }
         }
@@ -49,8 +52,11 @@ trait JniConfig<'a> {
         this: JObject,
         guard_size: jlong,
     ) -> Result<jobject, Self::Error>;
-    fn interruptable(env: &JNIEnv, this: JObject, enable: jboolean)
-        -> Result<jobject, Self::Error>;
+    fn epoch_interruption(
+        env: &JNIEnv,
+        this: JObject,
+        enable: jboolean,
+    ) -> Result<jobject, Self::Error>;
     fn max_wasm_stack(env: &JNIEnv, this: JObject, size: jlong) -> Result<jobject, Self::Error>;
     fn new_config(env: &JNIEnv, clazz: JClass) -> Result<jlong, Self::Error>;
     fn profiler(env: &JNIEnv, this: JObject, profile: JObject) -> Result<jobject, Self::Error>;
@@ -180,14 +186,14 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_dynamicMemoryGuardSi
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_interruptable(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_epochInterruption(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
 ) -> jobject {
     wrap_error!(
         env,
-        JniConfigImpl::interruptable(&env, this, enable),
+        JniConfigImpl::epoch_interruption(&env, this, enable),
         JObject::null().into_inner()
     )
 }

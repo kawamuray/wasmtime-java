@@ -51,7 +51,7 @@ test {
         showExceptions true
         showCauses true
         showStackTraces true
-        showStandardStreams false
+        showStandardStreams true
     }
 }
 
@@ -94,7 +94,7 @@ task metaProperties() {
     }
 }
 
-def javah4xVersion = '0.1.0'
+def javah4xVersion = '0.2.0'
 task downloadJavah4x(type: Download) {
     src "https://github.com/kawamuray/javah4x/releases/download/v${javah4xVersion}/javah4x-bin-${javah4xVersion}.zip"
     dest new File(project.buildDir, "tmp")
@@ -112,7 +112,6 @@ task generateJniInterfaces(type:JavaExec) {
             'io.github.kawamuray.wasmtime.Engine',
             'io.github.kawamuray.wasmtime.Func',
             'io.github.kawamuray.wasmtime.Instance',
-            'io.github.kawamuray.wasmtime.InterruptHandle',
             'io.github.kawamuray.wasmtime.Linker',
             'io.github.kawamuray.wasmtime.Memory',
             'io.github.kawamuray.wasmtime.Module',

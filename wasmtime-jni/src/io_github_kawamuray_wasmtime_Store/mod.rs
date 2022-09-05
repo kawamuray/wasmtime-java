@@ -12,7 +12,10 @@ macro_rules! wrap_error {
         match $body {
             Ok(v) => v,
             Err(e) => {
-                $env.throw(e).expect("error in throwing exception");
+                if let Err(err) = $env.throw(e) {
+                    $env.exception_describe().ok();
+                    panic!("error in throwing exception: {}", err);
+                }
                 $default
             }
         }
@@ -24,7 +27,6 @@ trait JniStore<'a> {
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn engine_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
     fn gc(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn interrupt_handle_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
     fn new_store(
         env: &JNIEnv,
         clazz: JClass,
@@ -32,6 +34,11 @@ trait JniStore<'a> {
         data: JObject,
         wasi_ctx_ptr: jlong,
     ) -> Result<jlong, Self::Error>;
+    fn set_epoch_deadline(
+        env: &JNIEnv,
+        this: JObject,
+        ticks_beyond_current: jlong,
+    ) -> Result<(), Self::Error>;
     fn stored_data(env: &JNIEnv, this: JObject) -> Result<jobject, Self::Error>;
 }
 
@@ -58,18 +65,6 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_gc(env: JNIEnv, this:
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_interruptHandlePtr(
-    env: JNIEnv,
-    this: JObject,
-) -> jlong {
-    wrap_error!(
-        env,
-        JniStoreImpl::interrupt_handle_ptr(&env, this),
-        Default::default()
-    )
-}
-
-#[no_mangle]
 extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore(
     env: JNIEnv,
     clazz: JClass,
@@ -80,6 +75,19 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore(
     wrap_error!(
         env,
         JniStoreImpl::new_store(&env, clazz, engine_ptr, data, wasi_ctx_ptr),
+        Default::default()
+    )
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_setEpochDeadline(
+    env: JNIEnv,
+    this: JObject,
+    ticks_beyond_current: jlong,
+) {
+    wrap_error!(
+        env,
+        JniStoreImpl::set_epoch_deadline(&env, this, ticks_beyond_current),
         Default::default()
     )
 }

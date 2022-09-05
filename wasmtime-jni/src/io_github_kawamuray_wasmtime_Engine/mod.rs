@@ -12,7 +12,10 @@ macro_rules! wrap_error {
         match $body {
             Ok(v) => v,
             Err(e) => {
-                $env.throw(e).expect("error in throwing exception");
+                if let Err(err) = $env.throw(e) {
+                    $env.exception_describe().ok();
+                    panic!("error in throwing exception: {}", err);
+                }
                 $default
             }
         }
@@ -22,6 +25,7 @@ macro_rules! wrap_error {
 trait JniEngine<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn increment_epoch(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
     fn new_engine(env: &JNIEnv, clazz: JClass) -> Result<jlong, Self::Error>;
     fn new_engine_with_config(
         env: &JNIEnv,
@@ -33,6 +37,18 @@ trait JniEngine<'a> {
 #[no_mangle]
 extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_dispose(env: JNIEnv, this: JObject) {
     wrap_error!(env, JniEngineImpl::dispose(&env, this), Default::default())
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_incrementEpoch(
+    env: JNIEnv,
+    this: JObject,
+) {
+    wrap_error!(
+        env,
+        JniEngineImpl::increment_epoch(&env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]

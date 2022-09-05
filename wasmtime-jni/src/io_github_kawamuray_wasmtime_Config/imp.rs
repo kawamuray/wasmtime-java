@@ -79,18 +79,18 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         config.dynamic_memory_guard_size(guard_size as u64);
         Ok(this.into_inner())
     }
-    fn interruptable(
+    fn epoch_interruption(
         env: &JNIEnv,
         this: JObject,
         enable: jboolean,
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        config.interruptable(enable == 1);
+        config.epoch_interruption(enable == 1);
         Ok(this.into_inner())
     }
     fn max_wasm_stack(env: &JNIEnv, this: JObject, size: jlong) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
-        config.max_wasm_stack(size as usize)?;
+        config.max_wasm_stack(size as usize);
         Ok(this.into_inner())
     }
     fn new_config(_env: &JNIEnv, _clazz: JClass) -> Result<jlong, Self::Error> {
@@ -106,7 +106,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
             "V_TUNE" => ProfilingStrategy::VTune,
             _ => ProfilingStrategy::None,
         };
-        config.profiler(profiling_strategy)?;
+        config.profiler(profiling_strategy);
         Ok(this.into_inner())
     }
     fn static_memory_guard_size(
@@ -135,7 +135,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
             "CRANELIFT" => Strategy::Cranelift,
             _ => Strategy::Auto,
         };
-        config.strategy(strategy)?;
+        config.strategy(strategy);
         Ok(this.into_inner())
     }
     fn wasm_bulk_memory(

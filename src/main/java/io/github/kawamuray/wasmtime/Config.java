@@ -22,14 +22,96 @@ public class Config implements Disposable{
     /// By default this option is `false`.
     public native Config debugInfo(boolean enable);
 
-    /// Configures whether functions and loops will be interruptable via the
-    /// [`Store::interruptHandle`] method.
+    /// Enables epoch-based interruption.
     ///
-    /// For more information see the documentation on
-    /// [`Store::interruptHandle`].
+    /// When executing code in async mode, we sometimes want to
+    /// implement a form of cooperative timeslicing: long-running Wasm
+    /// guest code should periodically yield to the executor
+    /// loop. This yielding could be implemented by using "fuel" (see
+    /// [`consume_fuel`](Config::consume_fuel)). However, fuel
+    /// instrumentation is somewhat expensive: it modifies the
+    /// compiled form of the Wasm code so that it maintains a precise
+    /// instruction count, frequently checking this count against the
+    /// remaining fuel. If one does not need this precise count or
+    /// deterministic interruptions, and only needs a periodic
+    /// interrupt of some form, then It would be better to have a more
+    /// lightweight mechanism.
     ///
-    /// By default this option is `false`.
-    public native Config interruptable(boolean enable);
+    /// Epoch-based interruption is that mechanism. There is a global
+    /// "epoch", which is a counter that divides time into arbitrary
+    /// periods (or epochs). This counter lives on the
+    /// [`Engine`](crate::Engine) and can be incremented by calling
+    /// [`Engine::increment_epoch`](crate::Engine::increment_epoch).
+    /// Epoch-based instrumentation works by setting a "deadline
+    /// epoch". The compiled code knows the deadline, and at certain
+    /// points, checks the current epoch against that deadline. It
+    /// will yield if the deadline has been reached.
+    ///
+    /// The idea is that checking an infrequently-changing counter is
+    /// cheaper than counting and frequently storing a precise metric
+    /// (instructions executed) locally. The interruptions are not
+    /// deterministic, but if the embedder increments the epoch in a
+    /// periodic way (say, every regular timer tick by a thread or
+    /// signal handler), then we can ensure that all async code will
+    /// yield to the executor within a bounded time.
+    ///
+    /// The deadline check cannot be avoided by malicious wasm code. It is safe
+    /// to use epoch deadlines to limit the execution time of untrusted
+    /// code.
+    ///
+    /// The [`Store`](crate::Store) tracks the deadline, and controls
+    /// what happens when the deadline is reached during
+    /// execution. Several behaviors are possible:
+    ///
+    /// - Trap if code is executing when the epoch deadline is
+    ///   met. See
+    ///   [`Store::epoch_deadline_trap`](crate::Store::epoch_deadline_trap).
+    ///
+    /// - Call an arbitrary function. This function may chose to trap or
+    ///   increment the epoch. See
+    ///   [`Store::epoch_deadline_callback`](crate::Store::epoch_deadline_callback).
+    ///
+    /// - Yield to the executor loop, then resume when the future is
+    ///   next polled. See
+    ///   [`Store::epoch_deadline_async_yield_and_update`](crate::Store::epoch_deadline_async_yield_and_update).
+    ///
+    /// Trapping is the default. The yielding behaviour may be used for
+    /// the timeslicing behavior described above.
+    ///
+    /// This feature is available with or without async support.
+    /// However, without async support, the timeslicing behaviour is
+    /// not available. This means epoch-based interruption can only
+    /// serve as a simple external-interruption mechanism.
+    ///
+    /// An initial deadline must be set before executing code by calling
+    /// [`Store::set_epoch_deadline`](crate::Store::set_epoch_deadline). If this
+    /// deadline is not configured then wasm will immediately trap.
+    ///
+    /// ## When to use fuel vs. epochs
+    ///
+    /// In general, epoch-based interruption results in faster
+    /// execution. This difference is sometimes significant: in some
+    /// measurements, up to 2-3x. This is because epoch-based
+    /// interruption does less work: it only watches for a global
+    /// rarely-changing counter to increment, rather than keeping a
+    /// local frequently-changing counter and comparing it to a
+    /// deadline.
+    ///
+    /// Fuel, in contrast, should be used when *deterministic*
+    /// yielding or trapping is needed. For example, if it is required
+    /// that the same function call with the same starting state will
+    /// always either complete or trap with an out-of-fuel error,
+    /// deterministically, then fuel with a fixed bound should be
+    /// used.
+    ///
+    /// # See Also
+    ///
+    /// - [`Engine::increment_epoch`](crate::Engine::increment_epoch)
+    /// - [`Store::set_epoch_deadline`](crate::Store::set_epoch_deadline)
+    /// - [`Store::epoch_deadline_trap`](crate::Store::epoch_deadline_trap)
+    /// - [`Store::epoch_deadline_callback`](crate::Store::epoch_deadline_callback)
+    /// - [`Store::epoch_deadline_async_yield_and_update`](crate::Store::epoch_deadline_async_yield_and_update)
+    public native Config epochInterruption(boolean enable);
 
     /// Configures the maximum amount of native stack space available to
     /// executing WebAssembly code.

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.github.kawamuray.wasmtime.Trap.Reason;
 import io.github.kawamuray.wasmtime.wasi.WasiCtx;
 import io.github.kawamuray.wasmtime.wasi.WasiCtxBuilder;
 
@@ -131,7 +132,7 @@ public class FuncTest {
                 func.call(store);
             } catch (TrapException e) {
                 Trap trap = e.trap();
-                assertEquals(trap.type(), Trap.Type.I32_EXIT);
+                assertEquals(trap.reason(), Reason.I32_EXIT);
                 assertEquals(trap.exitCode(), 42);
             }
         }

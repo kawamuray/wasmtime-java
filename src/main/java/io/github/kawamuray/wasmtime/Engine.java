@@ -25,6 +25,8 @@ public class Engine implements Disposable {
         this(newEngineWithConfig(config));
     }
 
+    public native void incrementEpoch();
+
     @Override
     public native void dispose();
 

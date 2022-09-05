@@ -59,7 +59,7 @@ impl<'a> JniLinker<'a> for JniLinkerImpl {
         let linker = interop::get_inner::<Linker<StoreData>>(env, this)?;
         let module = utils::get_string(env, *module)?;
         let name = utils::get_string(env, *name)?;
-        let ret = match linker.get(&mut *store, &module, Some(&name)) {
+        let ret = match linker.get(&mut *store, &module, &name) {
             Some(ext) => wextern::into_java(env, ext)?.into_inner(),
             None => JObject::null().into_inner(),
         };
