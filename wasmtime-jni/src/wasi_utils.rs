@@ -1,8 +1,8 @@
 use crate::errors::Result;
 use cap_std::ambient_authority;
-use cap_std::fs::Dir;
 use std::fs::File;
 use std::path::Path;
+use wasmtime_wasi::Dir;
 
 pub fn open_dir<P: AsRef<Path>>(path: P) -> Result<Dir> {
     Ok(Dir::open_ambient_dir(path, ambient_authority())?)
