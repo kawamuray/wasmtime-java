@@ -32,6 +32,8 @@ java {
     withSourcesJar()
 }
 
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
 compileJava {
     options.compilerArgs << '-parameters'
 }
@@ -73,19 +75,24 @@ static def rustTargetTriple() {
     System.getenv("JNILIB_RUST_TARGET")
 }
 
-processResources {
+sourcesJar {
     dependsOn 'metaProperties', 'copyJniLib'
-    from(new File(project.buildDir, "tmp")) {
-        include 'wasmtime-java-meta.properties'
-    }
-    from(new File(project.buildDir, "jni-libs")) {
-        include "libwasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
-        include "wasmtime_jni_${project.version}_${jniLibOsClassifier()}.*"
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs += [ "build/metaProperties", "build/jni-libs" ]
+        }
     }
 }
 
+processResources {
+    dependsOn 'metaProperties', 'copyJniLib'
+}
+
 task metaProperties() {
-    def output = new File(project.buildDir, "tmp/wasmtime-java-meta.properties")
+    def output = new File(project.buildDir, "metaProperties/wasmtime-java-meta.properties")
     outputs.file(output)
     doLast {
         def props = new Properties()
