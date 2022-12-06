@@ -50,9 +50,9 @@ impl<'a> JniStore<'a> for JniStoreImpl {
         let store = interop::get_inner::<Store<StoreData>>(&env, this)?;
         let data = store.data();
         Ok(if let Some(gref) = &data.java_data {
-            gref.as_obj().into_inner()
+            gref.as_obj().into_raw()
         } else {
-            JObject::null().into_inner()
+            JObject::null().into_raw()
         })
     }
 

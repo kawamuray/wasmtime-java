@@ -2,7 +2,7 @@ use crate::errors::Result;
 use jni::descriptors::Desc;
 use jni::errors::{Error, Result as JniResult};
 use jni::objects::{JFieldID, JObject};
-use jni::signature::{JavaType, Primitive};
+use jni::signature::{Primitive, ReturnType};
 use jni::strings::JNIString;
 use jni::sys::jlong;
 use jni::JNIEnv;
@@ -121,7 +121,7 @@ where
     // Check to see if we've already set this value. If it's not null, that
     // means that we're going to leak memory if it gets overwritten.
     let field_ptr = env
-        .get_field_unchecked(obj, field_id, JavaType::Primitive(Primitive::Long))?
+        .get_field_unchecked(obj, field_id, ReturnType::Primitive(Primitive::Long))?
         .j()? as *mut ReentrantLock<T>;
     if !field_ptr.is_null() {
         return Err(Error::FieldAlreadySet(field.as_ref().to_string()));
@@ -158,7 +158,7 @@ fn inner_ptr<'a>(env: &JNIEnv<'a>, obj: JObject<'a>) -> JniResult<jlong> {
     let class = env.auto_local(env.get_object_class(obj)?);
     let field_id: JFieldID = (&class, INNER_PTR_FIELD, "J").lookup(env)?;
     Ok(env
-        .get_field_unchecked(obj, field_id, JavaType::Primitive(Primitive::Long))?
+        .get_field_unchecked(obj, field_id, ReturnType::Primitive(Primitive::Long))?
         .j()?)
 }
 
@@ -176,7 +176,7 @@ where
     let _guard = env.lock_obj(obj)?;
     let mbox = {
         let ptr = env
-            .get_field_unchecked(obj, field_id, JavaType::Primitive(Primitive::Long))?
+            .get_field_unchecked(obj, field_id, ReturnType::Primitive(Primitive::Long))?
             .j()? as *mut ReentrantLock<T>;
 
         non_null!(ptr, "rust value from Java");

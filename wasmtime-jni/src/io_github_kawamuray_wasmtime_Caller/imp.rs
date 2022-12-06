@@ -22,8 +22,8 @@ impl<'a> JniCaller<'a> for JniCallerImpl {
         let mut caller = interop::get_inner::<Caller<StoreData>>(env, this)?;
         Ok(
             match caller.get_export(&utils::get_string(env, name.into())?) {
-                None => JObject::null().into_inner(),
-                Some(ext) => wextern::into_java(env, ext)?.into_inner(),
+                None => JObject::null().into_raw(),
+                Some(ext) => wextern::into_java(env, ext)?.into_raw(),
             },
         )
     }
@@ -34,7 +34,7 @@ impl<'a> JniCaller<'a> for JniCallerImpl {
             .data()
             .java_data
             .as_ref()
-            .map(|r| r.as_obj().into_inner())
-            .unwrap_or(JObject::null().into_inner()))
+            .map(|r| r.as_obj().into_raw())
+            .unwrap_or(JObject::null().into_raw()))
     }
 }

@@ -31,8 +31,8 @@ impl<'a> JniWasiCtxBuilder<'a> for JniWasiCtxBuilderImpl {
 
         for pair in utils::JavaArrayIter::new(env, envs)? {
             let pair = pair?;
-            let var = env.get_object_array_element(pair.into_inner(), 0)?;
-            let value = env.get_object_array_element(pair.into_inner(), 1)?;
+            let var = env.get_object_array_element(pair.into_raw(), 0)?;
+            let value = env.get_object_array_element(pair.into_raw(), 1)?;
 
             builder = builder.env(
                 &utils::get_string(env, var)?,

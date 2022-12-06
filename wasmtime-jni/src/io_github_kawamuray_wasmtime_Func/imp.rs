@@ -30,7 +30,7 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
                 "[Lio/github/kawamuray/wasmtime/Val$Type;",
             )?
             .l()?
-            .into_inner(),
+            .into_raw(),
         )?
         .into_boxed_slice();
         let result_types = wval::types_from_java(
@@ -41,7 +41,7 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
                 "[Lio/github/kawamuray/wasmtime/Val$Type;",
             )?
             .l()?
-            .into_inner(),
+            .into_raw(),
         )?
         .into_boxed_slice();
         let fn_type = FuncType::new(param_types.to_vec(), result_types.to_vec());
@@ -157,8 +157,8 @@ fn invoke_trampoline<'a, T>(
             &[
                 caller_ptr.into(),
                 index.into(),
-                jparams.into(),
-                jresults.into(),
+                unsafe { JObject::from_raw(jparams) }.into(),
+                unsafe { JObject::from_raw(jresults) }.into(),
             ],
         )?
         .l()?;

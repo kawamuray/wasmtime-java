@@ -18,7 +18,7 @@ impl<'a> JniGlobal<'a> for JniGlobalImpl {
 
         let val = global.get(&mut *store);
 
-        Ok(wval::into_java(env, val)?.into_inner())
+        Ok(wval::into_java(env, val)?.into_raw())
     }
 
     fn native_set(

@@ -31,32 +31,31 @@ impl<'a> JniModule<'a> for JniModuleImpl {
             let module = obj.module();
             let (ty, ty_obj) = match obj.ty() {
                 ExternType::Func(func) => {
-                    let results = types_into_java_array(env, func.results());
-                    let params = types_into_java_array(env, func.params());
+                    let results = types_into_java_array(env, func.results())?;
+                    let params = types_into_java_array(env, func.params())?;
 
                     (
-                        into_java_import_type(env, "FUNC"),
+                        into_java_import_type(env, "FUNC")?,
                         env.new_object(
                             "io/github/kawamuray/wasmtime/FuncType",
                             format!("([L{};[L{};)V", wval::VAL_TYPE, wval::VAL_TYPE),
-                            &[params?.into(), results?.into()],
-                        ),
+                            &[
+                                unsafe { JObject::from_raw(params) }.into(),
+                                unsafe { JObject::from_raw(results) }.into(),
+                            ],
+                        )?,
                     )
                 }
                 ExternType::Global(global) => (
-                    into_java_import_type(env, "GLOBAL"),
+                    into_java_import_type(env, "GLOBAL")?,
                     env.new_object(
                         "io/github/kawamuray/wasmtime/GlobalType",
                         format!("(L{};L{};)V", wval::VAL_TYPE, wmut::MUT_TYPE),
                         &[
-                            wval::type_into_java(env, global.content().to_owned())?
-                                .into_inner()
-                                .into(),
-                            wmut::mutability_into_java(env, global.mutability())?
-                                .into_inner()
-                                .into(),
+                            wval::type_into_java(env, global.content().to_owned())?.into(),
+                            wmut::mutability_into_java(env, global.mutability())?.into(),
                         ],
-                    ),
+                    )?,
                 ),
                 ExternType::Table(tab) => {
                     const TABLE_TYPE: &str = "io/github/kawamuray/wasmtime/TableType";
@@ -65,13 +64,13 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                         TABLE_TYPE,
                         format!("(L{};II)V", wval::VAL_TYPE),
                         &[
-                            val.into_inner().into(),
+                            val.into(),
                             (tab.minimum() as jint).into(),
                             tab.maximum().map(|v| v as jint).unwrap_or(-1).into(),
                         ],
                     );
 
-                    (into_java_import_type(env, "TABLE"), table)
+                    (into_java_import_type(env, "TABLE")?, table?)
                 }
                 ExternType::Memory(mem) => {
                     const MEMORY_TYPE: &str = "io/github/kawamuray/wasmtime/MemoryType";
@@ -84,7 +83,7 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                             mem.is_64().into(),
                         ],
                     );
-                    (into_java_import_type(env, "MEMORY"), mem)
+                    (into_java_import_type(env, "MEMORY")?, mem?)
                 }
             };
 
@@ -95,8 +94,8 @@ impl<'a> JniModule<'a> for JniModuleImpl {
                     IMPORT_TYPE_CLASS, OBJECT_CLASS, STRING_CLASS, STRING_CLASS
                 ),
                 &[
-                    ty?.into_inner().into(),
-                    ty_obj?.into_inner().into(),
+                    ty.into(),
+                    ty_obj.into(),
                     env.new_string(module)?.into(),
                     env.new_string(obj.name())?.into(),
                 ],

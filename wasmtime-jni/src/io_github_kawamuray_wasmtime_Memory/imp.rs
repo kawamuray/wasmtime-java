@@ -25,7 +25,7 @@ impl<'a> JniMemory<'a> for JniMemoryImpl {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
         let mem = interop::get_inner::<Memory>(&env, this)?;
         let ptr = mem.data_mut(&mut *store);
-        Ok(env.new_direct_byte_buffer(ptr)?.into_inner())
+        Ok(unsafe { env.new_direct_byte_buffer(ptr.as_mut_ptr(), ptr.len()) }?.into_raw())
     }
 
     fn native_data_size(
