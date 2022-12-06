@@ -63,7 +63,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeBuffer(
     wrap_error!(
         env,
         JniMemoryImpl::native_buffer(&env, this, store_ptr),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 

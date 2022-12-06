@@ -59,7 +59,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Module_imports(
     wrap_error!(
         env,
         JniModuleImpl::imports(&env, this),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 

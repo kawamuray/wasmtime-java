@@ -55,7 +55,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall(
     wrap_error!(
         env,
         JniFuncImpl::native_call(&env, this, store_ptr, args),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 

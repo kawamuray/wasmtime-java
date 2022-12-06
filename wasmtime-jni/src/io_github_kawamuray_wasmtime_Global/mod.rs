@@ -46,7 +46,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeGet(
     wrap_error!(
         env,
         JniGlobalImpl::native_get(&env, this, store_ptr),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 

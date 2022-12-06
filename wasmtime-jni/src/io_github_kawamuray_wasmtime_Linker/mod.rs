@@ -83,7 +83,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns(
     wrap_error!(
         env,
         JniLinkerImpl::native_externs(&env, this, store_ptr),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -98,7 +98,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet(
     wrap_error!(
         env,
         JniLinkerImpl::native_get(&env, this, store_ptr, module, name),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 

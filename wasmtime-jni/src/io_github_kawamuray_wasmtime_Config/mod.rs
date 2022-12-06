@@ -98,7 +98,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_cacheConfigLoadDefau
     wrap_error!(
         env,
         JniConfigImpl::cache_config_load_default(&env, this),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -111,7 +111,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_cacheConfigLoadNativ
     wrap_error!(
         env,
         JniConfigImpl::cache_config_load_native(&env, this, path),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -124,7 +124,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftDebugVerifi
     wrap_error!(
         env,
         JniConfigImpl::cranelift_debug_verifier(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -137,7 +137,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftNanCanonica
     wrap_error!(
         env,
         JniConfigImpl::cranelift_nan_canonicalization(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -150,7 +150,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftOptLevel(
     wrap_error!(
         env,
         JniConfigImpl::cranelift_opt_level(&env, this, level),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -163,7 +163,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_debugInfo(
     wrap_error!(
         env,
         JniConfigImpl::debug_info(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -181,7 +181,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_dynamicMemoryGuardSi
     wrap_error!(
         env,
         JniConfigImpl::dynamic_memory_guard_size(&env, this, guard_size),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -194,7 +194,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_epochInterruption(
     wrap_error!(
         env,
         JniConfigImpl::epoch_interruption(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -207,7 +207,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_maxWasmStack(
     wrap_error!(
         env,
         JniConfigImpl::max_wasm_stack(&env, this, size),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -232,7 +232,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_profiler(
     wrap_error!(
         env,
         JniConfigImpl::profiler(&env, this, profile),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -245,7 +245,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryGuardSiz
     wrap_error!(
         env,
         JniConfigImpl::static_memory_guard_size(&env, this, guard_size),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -258,7 +258,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryMaximumS
     wrap_error!(
         env,
         JniConfigImpl::static_memory_maximum_size(&env, this, max_size),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -271,7 +271,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_strategy(
     wrap_error!(
         env,
         JniConfigImpl::strategy(&env, this, strategy),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -284,7 +284,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmBulkMemory(
     wrap_error!(
         env,
         JniConfigImpl::wasm_bulk_memory(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -297,7 +297,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmMultiValue(
     wrap_error!(
         env,
         JniConfigImpl::wasm_multi_value(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -310,7 +310,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmReferenceTypes(
     wrap_error!(
         env,
         JniConfigImpl::wasm_reference_types(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -323,7 +323,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmSimd(
     wrap_error!(
         env,
         JniConfigImpl::wasm_simd(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -336,6 +336,6 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmThreads(
     wrap_error!(
         env,
         JniConfigImpl::wasm_threads(&env, this, enable),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
