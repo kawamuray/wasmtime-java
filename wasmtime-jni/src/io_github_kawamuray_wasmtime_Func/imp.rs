@@ -2,7 +2,8 @@ use super::JniFunc;
 use crate::errors::{self, Result};
 use crate::interop::ReentrantLock;
 use crate::store::StoreData;
-use crate::{interop, utils, wtrap, wval};
+use crate::{interop, utils, wfuncerror, wval};
+use anyhow::bail;
 use jni::objects::{JClass, JObject};
 use jni::sys::{jint, jlong, jobjectArray};
 use jni::{JNIEnv, JavaVM};
@@ -54,9 +55,9 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
         let func = Func::new(&mut *store, fn_type, move |caller, params, results| {
             let ret = invoke_trampoline(&jvm, index, caller, params, results, &finalizer);
             match ret {
-                Ok(None) => Ok(()),
-                Ok(Some(trap)) => Err(trap),
-                Err(e) => Err(Trap::new(e.to_string())),
+                Ok(Ok(_)) => Ok(()),
+                Ok(Err(wasm_error)) => Err(wasm_error),
+                Err(e) => bail!(e.to_string()),
             }
         });
 
@@ -82,9 +83,12 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
             vec![unsafe { std::mem::zeroed() }; func.ty(&mut *store).results().len()];
 
         if let Err(e) = func.call(&mut *store, &wasm_params, &mut wasm_results) {
-            return Err(match e.downcast::<Trap>() {
-                Ok(trap) => errors::Error::WasmTrap(trap),
-                Err(e) => e.into(),
+            return Err(if let Some(trap) = e.downcast_ref::<Trap>() {
+                errors::Error::WasmTrap(*trap)
+            } else if let Some(exit) = e.downcast_ref::<wasi_common::I32Exit>() {
+                errors::Error::WasiI32ExitCode(exit.0)
+            } else {
+                e.into()
             });
         }
 
@@ -128,7 +132,7 @@ fn invoke_trampoline<'a, T>(
     results: &mut [Val],
     // Just to capture it in closure calling this so that it drops alongs with closure
     _finalizer: &FuncFinalizer,
-) -> Result<Option<Trap>> {
+) -> Result<anyhow::Result<()>> {
     // TODO: this should be attach_current_thread_permanently?
     let env = jvm.attach_current_thread()?;
 
@@ -149,19 +153,28 @@ fn invoke_trampoline<'a, T>(
     let caller = ReentrantLock::new(caller);
     let caller_ptr = &caller as *const ReentrantLock<Caller<_>> as jlong;
 
-    let trap = env
-        .call_static_method(
-            "io/github/kawamuray/wasmtime/Func",
-            "invokeTrampoline",
-            "(JI[Lio/github/kawamuray/wasmtime/Val;[Lio/github/kawamuray/wasmtime/Val;)Lio/github/kawamuray/wasmtime/Trap;",
-            &[
-                caller_ptr.into(),
-                index.into(),
-                unsafe { JObject::from_raw(jparams) }.into(),
-                unsafe { JObject::from_raw(jresults) }.into(),
-            ],
-        )?
-        .l()?;
+    let call_result = env.call_static_method(
+        "io/github/kawamuray/wasmtime/Func",
+        "invokeTrampoline",
+        "(JI[Lio/github/kawamuray/wasmtime/Val;[Lio/github/kawamuray/wasmtime/Val;)V",
+        &[
+            caller_ptr.into(),
+            index.into(),
+            unsafe { JObject::from_raw(jparams) }.into(),
+            unsafe { JObject::from_raw(jresults) }.into(),
+        ],
+    );
+    if let Err(e) = call_result {
+        match e {
+            jni::errors::Error::JavaException => {
+                let throwable = env.exception_occurred()?;
+                env.exception_clear()?;
+                let wasm_error = wfuncerror::from_java(&env, throwable)?;
+                return Ok(Err(wasm_error));
+            }
+            _ => return Err(e.into()),
+        }
+    }
 
     // Fill java results value into Rust's
     for (i, rval) in utils::JavaArrayIter::new(&env, jresults)?.enumerate() {
@@ -170,9 +183,6 @@ fn invoke_trampoline<'a, T>(
             results[i] = wval::from_java(&env, rval)?;
         }
     }
-    Ok(if trap.is_null() {
-        None
-    } else {
-        Some(wtrap::from_java(&env, trap)?)
-    })
+
+    Ok(Ok(()))
 }
