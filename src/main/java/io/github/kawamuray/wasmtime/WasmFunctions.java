@@ -2,7 +2,6 @@
 package io.github.kawamuray.wasmtime;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @SuppressWarnings("ALL")
 public final class WasmFunctions {
@@ -143,7 +142,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call();
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -152,7 +150,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -161,7 +158,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -170,7 +166,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -179,7 +174,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -188,7 +182,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -197,7 +190,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -206,7 +198,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -215,7 +206,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -224,7 +214,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -233,7 +222,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -242,7 +230,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -251,7 +238,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -260,7 +246,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]), a12.fromWasmVal(params[12]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -269,7 +254,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]), a12.fromWasmVal(params[12]), a13.fromWasmVal(params[13]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -278,7 +262,6 @@ public final class WasmFunctions {
                         (caller, params, results) -> {
                             R0 ret = func.call(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]), a12.fromWasmVal(params[12]), a13.fromWasmVal(params[13]), a14.fromWasmVal(params[14]));
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         });
     }
 
@@ -286,7 +269,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] {  }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept();
-                            return Optional.empty();
                         });
     }
 
@@ -294,7 +276,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]));
-                            return Optional.empty();
                         });
     }
 
@@ -302,7 +283,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]));
-                            return Optional.empty();
                         });
     }
 
@@ -310,7 +290,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]));
-                            return Optional.empty();
                         });
     }
 
@@ -318,7 +297,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]));
-                            return Optional.empty();
                         });
     }
 
@@ -326,7 +304,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]));
-                            return Optional.empty();
                         });
     }
 
@@ -334,7 +311,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]));
-                            return Optional.empty();
                         });
     }
 
@@ -342,7 +318,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]));
-                            return Optional.empty();
                         });
     }
 
@@ -350,7 +325,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]));
-                            return Optional.empty();
                         });
     }
 
@@ -358,7 +332,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]));
-                            return Optional.empty();
                         });
     }
 
@@ -366,7 +339,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type(), a9.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]));
-                            return Optional.empty();
                         });
     }
 
@@ -374,7 +346,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type(), a9.type(), a10.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]));
-                            return Optional.empty();
                         });
     }
 
@@ -382,7 +353,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type(), a9.type(), a10.type(), a11.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]));
-                            return Optional.empty();
                         });
     }
 
@@ -390,7 +360,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type(), a9.type(), a10.type(), a11.type(), a12.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]), a12.fromWasmVal(params[12]));
-                            return Optional.empty();
                         });
     }
 
@@ -398,7 +367,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type(), a9.type(), a10.type(), a11.type(), a12.type(), a13.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]), a12.fromWasmVal(params[12]), a13.fromWasmVal(params[13]));
-                            return Optional.empty();
                         });
     }
 
@@ -406,7 +374,6 @@ public final class WasmFunctions {
         return new Func(store, new FuncType(new Val.Type[] { a0.type(), a1.type(), a2.type(), a3.type(), a4.type(), a5.type(), a6.type(), a7.type(), a8.type(), a9.type(), a10.type(), a11.type(), a12.type(), a13.type(), a14.type() }, EMPTY_TYPES),
                         (caller, params, results) -> {
                             func.accept(a0.fromWasmVal(params[0]), a1.fromWasmVal(params[1]), a2.fromWasmVal(params[2]), a3.fromWasmVal(params[3]), a4.fromWasmVal(params[4]), a5.fromWasmVal(params[5]), a6.fromWasmVal(params[6]), a7.fromWasmVal(params[7]), a8.fromWasmVal(params[8]), a9.fromWasmVal(params[9]), a10.fromWasmVal(params[10]), a11.fromWasmVal(params[11]), a12.fromWasmVal(params[12]), a13.fromWasmVal(params[13]), a14.fromWasmVal(params[14]));
-                            return Optional.empty();
                         });
     }
 

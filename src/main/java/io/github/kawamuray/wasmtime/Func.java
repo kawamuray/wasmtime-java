@@ -3,7 +3,6 @@ package io.github.kawamuray.wasmtime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Func implements Disposable {
     @FunctionalInterface
     public interface Handler<T> {
-        Optional<Trap> call(Caller<T> caller, Val[] params, Val[] results);
+        void call(Caller<T> caller, Val[] params, Val[] results);
     }
 
     private static final Val[] EMPTY_VALS = new Val[0];
@@ -40,7 +39,7 @@ public class Func implements Disposable {
      * Call this function with given variadic arguments
      * @param args a collection of argument values passed to the callee function
      * @return a list of returned values
-     * @throws TrapException if the function throws an exception or exits with WASI API
+     * @throws WasmFunctionError if the function throws an exception or exits with WASI API
      * @throws WasmtimeException if the wasmtime runtime throws an internal exception
      */
     public <T> Val[] call(Store<T> store, Val... args) {
@@ -51,7 +50,7 @@ public class Func implements Disposable {
      * Call this function with a given list of arguments
      * @param args a collection of argument values passed to the callee function
      * @return a list of returned values
-     * @throws TrapException if the function throws an exception or exits with WASI API
+     * @throws WasmFunctionError if the function throws an exception or exits with WASI API
      * @throws WasmtimeException if the wasmtime runtime throws an internal exception
      */
     public <T> List<Val> call(Store<T> store, Collection<Val> args) {
@@ -59,18 +58,16 @@ public class Func implements Disposable {
     }
 
     // "trampoline" method to call back Java function from wasmtime through JNI code
-    private static <T> Trap invokeTrampoline(long callerPtr, int index, Val[] params, Val[] results) {
+    private static <T> void invokeTrampoline(long callerPtr, int index, Val[] params, Val[] results) {
         if (log.isDebugEnabled()) {
             log.debug("Trampoline {} invoked with params={}, results={}", index, params, results);
         }
         Handler<T> fn = registry.lookup(index);
         if (fn == null) {
-            return Trap.fromMessage("no trampoline function associated to index: " + index);
+            throw new IllegalStateException("no trampoline function associated to index: " + index);
         }
         try (Caller<T> caller = new Caller<>(callerPtr)) {
-            return fn.call(caller, params, results).orElse(null);
-        } catch (Throwable e) {
-            return Trap.fromException(e);
+            fn.call(caller, params, results);
         }
     }
 

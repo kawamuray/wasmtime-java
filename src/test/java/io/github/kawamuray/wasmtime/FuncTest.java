@@ -1,13 +1,15 @@
 package io.github.kawamuray.wasmtime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.github.kawamuray.wasmtime.Trap.Reason;
+import io.github.kawamuray.wasmtime.WasmFunctionError.I32ExitError;
+import io.github.kawamuray.wasmtime.WasmFunctionError.TrapError;
 import io.github.kawamuray.wasmtime.wasi.WasiCtx;
 import io.github.kawamuray.wasmtime.wasi.WasiCtxBuilder;
 
@@ -63,7 +65,6 @@ public class FuncTest {
                      (caller, params, results) -> {
                          callerValue.set(caller.data().get());
                          results[0] = Val.fromI64(params[0].i64() + params[1].i64());
-                         return Optional.empty();
                      });
              Instance instance = new Instance(store, module, Arrays.asList(Extern.fromFunc(callback)))) {
             try (Func func = instance.getFunc(store, "trampoline").get()) {
@@ -76,14 +77,14 @@ public class FuncTest {
         }
     }
 
-    @Test(expected = TrapException.class)
-    public void testTrampolineTrap() {
+    @Test(expected = RuntimeException.class)
+    public void testTrampolineErrorJavaException() {
         FuncType fnType = new FuncType(new Type[]{Type.I64, Type.I64}, new Type[]{Type.I64});
         try (Store<Void> store = Store.withoutData();
              Engine engine = store.engine();
              Module module = new Module(engine, WAT_BYTES_TRAMPOLINE);
              Func callback = new Func(store, fnType,
-                     (caller, params, results) -> Optional.of(Trap.fromMessage("no hope...")));
+                     (caller, params, results) -> { throw new RuntimeException("no hope..."); });
              Instance instance = new Instance(store, module, Arrays.asList(Extern.fromFunc(callback)))) {
             try (Func func = instance.getFunc(store, "trampoline").get()) {
                 func.call(store, Val.fromI64(1), Val.fromI64(2));
@@ -91,16 +92,33 @@ public class FuncTest {
         }
     }
 
-    @Test(expected = TrapException.class)
-    public void testTrampolineException() {
+    @Test(expected = TrapError.class)
+    public void testTrampolineErrorTrap() {
         FuncType fnType = new FuncType(new Type[]{Type.I64, Type.I64}, new Type[]{Type.I64});
         try (Store<Void> store = Store.withoutData();
              Engine engine = store.engine();
              Module module = new Module(engine, WAT_BYTES_TRAMPOLINE);
              Func callback = new Func(store, fnType,
                      (caller, params, results) -> {
-                         throw new RuntimeException("no hope...");
+                         throw new TrapError(Trap.INTERRUPT);
                      });
+             Instance instance = new Instance(store, module, Arrays.asList(Extern.fromFunc(callback)))) {
+            try (Func func = instance.getFunc(store, "trampoline").get()) {
+                func.call(store, Val.fromI64(1), Val.fromI64(2));
+            }
+        }
+    }
+
+    @Test(expected = I32ExitError.class)
+    public void testTrampolineErrorI32Exit() {
+        FuncType fnType = new FuncType(new Type[]{Type.I64, Type.I64}, new Type[]{Type.I64});
+        try (Store<Void> store = Store.withoutData();
+             Engine engine = store.engine();
+             Module module = new Module(engine, WAT_BYTES_TRAMPOLINE);
+             Func callback = new Func(store, fnType,
+                                      (caller, params, results) -> {
+                                          throw new I32ExitError(-1);
+                                      });
              Instance instance = new Instance(store, module, Arrays.asList(Extern.fromFunc(callback)))) {
             try (Func func = instance.getFunc(store, "trampoline").get()) {
                 func.call(store, Val.fromI64(1), Val.fromI64(2));
@@ -130,10 +148,9 @@ public class FuncTest {
             linker.module(store, "", module);
             try (Func func = linker.get(store, "", "_start").get().func()) {
                 func.call(store);
-            } catch (TrapException e) {
-                Trap trap = e.trap();
-                assertEquals(trap.reason(), Reason.I32_EXIT);
-                assertEquals(trap.exitCode(), 42);
+                fail("exit normally");
+            } catch (I32ExitError e) {
+                assertEquals(42, e.exitCode());
             }
         }
     }

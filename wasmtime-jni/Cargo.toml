@@ -8,11 +8,11 @@ edition = "2018"
 crate_type = ["cdylib"]
 
 [dependencies]
-jni = "0.19.0"
+jni = "0.20.0"
 thiserror = "1.0.30"
 anyhow = "1.0.56"
-wasmtime = "1.0.0"
-wasmtime-wasi = "1.0.0"
-wasi-common = "1.0.0"
-wasi-cap-std-sync = "1.0.0"
-cap-std = "0.25.3"
+wasmtime = "3.0.1"
+wasmtime-wasi = "3.0.1"
+wasi-common = "3.0.1"
+wasi-cap-std-sync = "3.0.1"
+cap-std = "0.26.1"

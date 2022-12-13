@@ -17,6 +17,8 @@ pub enum Error {
     Wasmtime(#[from] anyhow::Error),
     #[error("aborted instruction execution: {0}")]
     WasmTrap(#[from] wasmtime::Trap),
+    #[error("wasi exit code: {0}")]
+    WasiI32ExitCode(i32),
     #[error("unknown enum variant: {0}")]
     UnknownEnum(String),
     #[error("not implemented")]
@@ -59,11 +61,20 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
             WasmTrap(trap) => {
                 let jtrap = wtrap::into_java(env, trap)?;
                 let jtrap_ex = env.new_object(
-                    "io/github/kawamuray/wasmtime/TrapException",
+                    "io/github/kawamuray/wasmtime/WasmFunctionError$TrapError",
                     "(Lio/github/kawamuray/wasmtime/Trap;)V",
                     &[jtrap.into()],
                 )?;
                 return Ok(jtrap_ex.into());
+            }
+            WasiI32ExitCode(exit_code) => {
+                return Ok(env
+                    .new_object(
+                        "io/github/kawamuray/wasmtime/WasmFunctionError$I32ExitError",
+                        "(I)V",
+                        &[(*exit_code).into()],
+                    )?
+                    .into())
             }
             WasiConfig(e) => (
                 "io/github/kawamuray/wasmtime/WasmtimeException",

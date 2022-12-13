@@ -8,7 +8,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import io.github.kawamuray.wasmtime.Trap.TrapCode;
+import io.github.kawamuray.wasmtime.WasmFunctionError.TrapError;
 import io.github.kawamuray.wasmtime.WasmFunctions.Consumer0;
 
 public class TrapTest {
@@ -43,8 +43,8 @@ public class TrapTest {
                 try {
                     run.accept();
                     fail("no trap received");
-                } catch (TrapException e) {
-                    assertEquals(TrapCode.INTERRUPT, e.trap().trapCode());
+                } catch (TrapError e) {
+                    assertEquals(Trap.INTERRUPT, e.trap());
                 }
             }
         }

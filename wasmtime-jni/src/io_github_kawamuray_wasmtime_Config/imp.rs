@@ -16,7 +16,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     fn cache_config_load_default(env: &JNIEnv, this: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.cache_config_load_default()?;
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn cache_config_load_native(
         env: &JNIEnv,
@@ -29,7 +29,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
         //So the `?` operator cannot be used at here
         let path_str = path_j_str.to_str().expect("error path!");
         config.cache_config_load(Path::new(path_str))?;
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn cranelift_debug_verifier(
         env: &JNIEnv,
@@ -38,7 +38,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.cranelift_debug_verifier(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn cranelift_nan_canonicalization(
         env: &JNIEnv,
@@ -47,7 +47,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.cranelift_nan_canonicalization(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn cranelift_opt_level(
         env: &JNIEnv,
@@ -63,12 +63,12 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
             _ => OptLevel::Speed,
         };
         config.cranelift_opt_level(optlevel);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn debug_info(env: &JNIEnv, this: JObject, enable: jboolean) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.debug_info(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn dynamic_memory_guard_size(
         env: &JNIEnv,
@@ -77,7 +77,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.dynamic_memory_guard_size(guard_size as u64);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn epoch_interruption(
         env: &JNIEnv,
@@ -86,12 +86,12 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.epoch_interruption(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn max_wasm_stack(env: &JNIEnv, this: JObject, size: jlong) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.max_wasm_stack(size as usize);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn new_config(_env: &JNIEnv, _clazz: JClass) -> Result<jlong, Self::Error> {
         let config = Config::default();
@@ -107,7 +107,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
             _ => ProfilingStrategy::None,
         };
         config.profiler(profiling_strategy);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn static_memory_guard_size(
         env: &JNIEnv,
@@ -116,7 +116,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.static_memory_guard_size(guard_size as u64);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn static_memory_maximum_size(
         env: &JNIEnv,
@@ -125,7 +125,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.static_memory_maximum_size(max_size as u64);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn strategy(env: &JNIEnv, this: JObject, strategy: JObject) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
@@ -136,7 +136,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
             _ => Strategy::Auto,
         };
         config.strategy(strategy);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn wasm_bulk_memory(
         env: &JNIEnv,
@@ -145,7 +145,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.wasm_bulk_memory(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn wasm_multi_value(
         env: &JNIEnv,
@@ -154,7 +154,7 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.wasm_multi_value(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn wasm_reference_types(
         env: &JNIEnv,
@@ -163,17 +163,17 @@ impl<'a> JniConfig<'a> for JniConfigImpl {
     ) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.wasm_reference_types(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn wasm_simd(env: &JNIEnv, this: JObject, enable: jboolean) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.wasm_simd(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn wasm_threads(env: &JNIEnv, this: JObject, enable: jboolean) -> Result<jobject, Self::Error> {
         let mut config = interop::get_inner::<Config>(env, this)?;
         config.wasm_threads(enable == 1);
-        Ok(this.into_inner())
+        Ok(this.into_raw())
     }
     fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
         interop::dispose_inner::<Config>(&env, this)?;

@@ -100,6 +100,6 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_storedData(
     wrap_error!(
         env,
         JniStoreImpl::stored_data(&env, this),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }

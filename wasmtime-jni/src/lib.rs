@@ -30,6 +30,7 @@ mod store;
 pub(crate) mod utils;
 mod wasi_utils;
 mod wextern;
+mod wfuncerror;
 mod wmut;
 mod wtrap;
 mod wval;

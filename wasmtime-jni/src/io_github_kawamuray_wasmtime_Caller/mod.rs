@@ -40,7 +40,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_data(
     wrap_error!(
         env,
         JniCallerImpl::data(&env, this),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }
 
@@ -53,6 +53,6 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_nativeGetExport(
     wrap_error!(
         env,
         JniCallerImpl::native_get_export(&env, this, name),
-        JObject::null().into_inner()
+        JObject::null().into_raw()
     )
 }

@@ -24,7 +24,6 @@ print("""// Automatically generated. DO NOT EDIT.
 package io.github.kawamuray.wasmtime;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @SuppressWarnings("ALL")
 public final class WasmFunctions {
@@ -54,7 +53,6 @@ for i in range(MAX_ARGS + 1):
                         (caller, params, results) -> {{
                             R0 ret = func.call({from_wasms});
                             results[0] = r0.toWasmVal(ret);
-                            return Optional.empty();
                         }});
     }}
 """.format(i=i,
@@ -70,7 +68,6 @@ for i in range(MAX_ARGS + 1):
         return new Func(store, new FuncType(new Val.Type[] {{ {type_calls} }}, EMPTY_TYPES),
                         (caller, params, results) -> {{
                             func.accept({from_wasms});
-                            return Optional.empty();
                         }});
     }}
 """.format(i=i,
