@@ -21,7 +21,7 @@ jobs:
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly-2022-05-28
+        toolchain: nightly-2022-12-11
         override: true
         components: rustfmt
     - name: Build with Gradle
@@ -45,7 +45,7 @@ jobs:
     - name: Set up Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly-2022-05-28
+        toolchain: nightly-2022-12-11
         override: true
         components: rustfmt
     - name: Build
