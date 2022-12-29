@@ -60,7 +60,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_dispose(env: JNIEnv,
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeDefine(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeDefine__Ljava_lang_String_2Ljava_lang_String_2Lio_github_kawamuray_wasmtime_Extern_2(
     env: JNIEnv,
     this: JObject,
     module_name: JString,
@@ -75,7 +75,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeDefine(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns__J(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -88,7 +88,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet__JLjava_lang_String_2Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -103,7 +103,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule__JLjava_lang_String_2J(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -118,7 +118,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_newLinker(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_newLinker__J(
     env: JNIEnv,
     clazz: JClass,
     engine_ptr: jlong,

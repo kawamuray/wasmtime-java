@@ -46,7 +46,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Func_dispose(env: JNIEnv, t
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall__J_3Lio_github_kawamuray_wasmtime_Val_2(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -60,7 +60,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Func_newFunc(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Func_newFunc__JLio_github_kawamuray_wasmtime_FuncType_2I(
     env: JNIEnv,
     clazz: JClass,
     store_ptr: jlong,

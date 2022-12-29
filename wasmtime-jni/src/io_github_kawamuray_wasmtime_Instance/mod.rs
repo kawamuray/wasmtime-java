@@ -56,7 +56,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_dispose(env: JNIEn
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc__JLjava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -70,7 +70,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetMemory(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetMemory__JLjava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -84,7 +84,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetMemory(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_newInstance(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_newInstance__JJ_3Lio_github_kawamuray_wasmtime_Extern_2(
     env: JNIEnv,
     clazz: JClass,
     store_ptr: jlong,

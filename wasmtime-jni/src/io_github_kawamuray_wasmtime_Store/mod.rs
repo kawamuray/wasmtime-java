@@ -65,7 +65,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_gc(env: JNIEnv, this:
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore__JLjava_lang_Object_2J(
     env: JNIEnv,
     clazz: JClass,
     engine_ptr: jlong,
@@ -80,7 +80,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_setEpochDeadline(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_setEpochDeadline__J(
     env: JNIEnv,
     this: JObject,
     ticks_beyond_current: jlong,

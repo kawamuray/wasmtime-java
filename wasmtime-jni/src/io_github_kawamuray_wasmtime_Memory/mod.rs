@@ -55,7 +55,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_dispose(env: JNIEnv,
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeBuffer(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeBuffer__J(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -68,7 +68,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeBuffer(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeDataSize(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeDataSize__J(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -81,7 +81,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeDataSize(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeGrow(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeGrow__JJ(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -95,7 +95,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeGrow(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeSize(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeSize__J(
     env: JNIEnv,
     this: JObject,
     store_ptr: jlong,
@@ -108,7 +108,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeSize(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_newMemory(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_newMemory__JJJZ(
     env: JNIEnv,
     clazz: JClass,
     inner_ptr: jlong,

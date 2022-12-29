@@ -73,7 +73,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_dispose(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeAddToLinker(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeAddToLinker__J(
     env: JNIEnv,
     clazz: JClass,
     linker_ptr: jlong,
@@ -86,7 +86,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeAddToLin
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeInsertDir(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeInsertDir__ILjava_lang_String_2IILjava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     fd: jint,
@@ -111,7 +111,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeInsertDi
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeInsertFile(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeInsertFile__ILjava_lang_String_2I(
     env: JNIEnv,
     this: JObject,
     fd: jint,
@@ -126,7 +126,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeInsertFi
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativePushPreopenDir(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativePushPreopenDir__Ljava_lang_String_2Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     dir_path: JString,
@@ -140,7 +140,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativePushPreo
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStderr(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStderr__Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     path: JString,
@@ -153,7 +153,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStder
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStdin(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStdin__Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     path: JString,
@@ -166,7 +166,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStdin
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStdout(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStdout__Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     path: JString,
@@ -179,7 +179,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_nativeSetStdou
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_pushArg(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_pushArg__Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     arg: JString,
@@ -192,7 +192,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_pushArg(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_pushEnv(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtx_pushEnv__Ljava_lang_String_2Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     var: JString,

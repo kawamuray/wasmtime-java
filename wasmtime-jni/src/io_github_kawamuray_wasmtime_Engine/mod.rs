@@ -64,7 +64,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngine(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngineWithConfig(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngineWithConfig__Lio_github_kawamuray_wasmtime_Config_2(
     env: JNIEnv,
     clazz: JClass,
     config: JObject,
