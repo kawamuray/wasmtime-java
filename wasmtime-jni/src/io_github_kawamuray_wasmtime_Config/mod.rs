@@ -103,7 +103,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_cacheConfigLoadDefau
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_cacheConfigLoadNative(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_cacheConfigLoadNative__Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     path: JString,
@@ -116,7 +116,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_cacheConfigLoadNativ
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftDebugVerifier(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftDebugVerifier__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -129,7 +129,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftDebugVerifi
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftNanCanonicalization(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftNanCanonicalization__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -142,7 +142,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftNanCanonica
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftOptLevel(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftOptLevel__Lio_github_kawamuray_wasmtime_OptLevel_2(
     env: JNIEnv,
     this: JObject,
     level: JObject,
@@ -155,7 +155,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_craneliftOptLevel(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_debugInfo(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_debugInfo__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -173,7 +173,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_dispose(env: JNIEnv,
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_dynamicMemoryGuardSize(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_dynamicMemoryGuardSize__J(
     env: JNIEnv,
     this: JObject,
     guard_size: jlong,
@@ -186,7 +186,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_dynamicMemoryGuardSi
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_epochInterruption(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_epochInterruption__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -199,7 +199,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_epochInterruption(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_maxWasmStack(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_maxWasmStack__J(
     env: JNIEnv,
     this: JObject,
     size: jlong,
@@ -224,7 +224,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_newConfig(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_profiler(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_profiler__Lio_github_kawamuray_wasmtime_ProfilingStrategy_2(
     env: JNIEnv,
     this: JObject,
     profile: JObject,
@@ -237,7 +237,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_profiler(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryGuardSize(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryGuardSize__J(
     env: JNIEnv,
     this: JObject,
     guard_size: jlong,
@@ -250,7 +250,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryGuardSiz
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryMaximumSize(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryMaximumSize__J(
     env: JNIEnv,
     this: JObject,
     max_size: jlong,
@@ -263,7 +263,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_staticMemoryMaximumS
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_strategy(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_strategy__Lio_github_kawamuray_wasmtime_Strategy_2(
     env: JNIEnv,
     this: JObject,
     strategy: JObject,
@@ -276,7 +276,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_strategy(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmBulkMemory(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmBulkMemory__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -289,7 +289,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmBulkMemory(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmMultiValue(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmMultiValue__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -302,7 +302,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmMultiValue(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmReferenceTypes(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmReferenceTypes__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -315,7 +315,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmReferenceTypes(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmSimd(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmSimd__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,
@@ -328,7 +328,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmSimd(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmThreads(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Config_wasmThreads__Z(
     env: JNIEnv,
     this: JObject,
     enable: jboolean,

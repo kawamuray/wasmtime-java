@@ -45,7 +45,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_data(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_nativeGetExport(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_nativeGetExport__Ljava_lang_String_2(
     env: JNIEnv,
     this: JObject,
     name: JString,

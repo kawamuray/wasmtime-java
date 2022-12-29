@@ -64,7 +64,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Module_imports(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromBinary(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromBinary__J_3B(
     env: JNIEnv,
     clazz: JClass,
     engine_ptr: jlong,
@@ -78,7 +78,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromBinary(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromFile(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromFile__JLjava_lang_String_2(
     env: JNIEnv,
     clazz: JClass,
     engine_ptr: jlong,
@@ -92,7 +92,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromFile(
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newModule(
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newModule__J_3B(
     env: JNIEnv,
     clazz: JClass,
     engine_ptr: jlong,

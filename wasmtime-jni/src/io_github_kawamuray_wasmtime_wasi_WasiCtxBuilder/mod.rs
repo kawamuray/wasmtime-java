@@ -40,7 +40,7 @@ trait JniWasiCtxBuilder<'a> {
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtxBuilder_nativeBuild(
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtxBuilder_nativeBuild___3Ljava_lang_Object_2_3Ljava_lang_Object_2ZLjava_lang_String_2ZLjava_lang_String_2ZLjava_lang_String_2_3Ljava_lang_Object_2(
     env: JNIEnv,
     clazz: JClass,
     envs: jobjectArray,
