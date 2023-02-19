@@ -9,10 +9,10 @@ crate_type = ["cdylib"]
 
 [dependencies]
 jni = "0.20.0"
-thiserror = "1.0.30"
-anyhow = "1.0.56"
-wasmtime = "3.0.1"
-wasmtime-wasi = "3.0.1"
-wasi-common = "3.0.1"
-wasi-cap-std-sync = "3.0.1"
-cap-std = "0.26.1"
+thiserror = "1.0.38"
+anyhow = "1.0.69"
+wasmtime = "5.0.0"
+wasmtime-wasi = "5.0.0"
+wasi-common = "5.0.0"
+wasi-cap-std-sync = "5.0.0"
+cap-std = "1.0.5"
