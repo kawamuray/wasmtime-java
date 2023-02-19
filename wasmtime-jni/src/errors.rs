@@ -29,6 +29,8 @@ pub enum Error {
     WasiConfig(#[from] StringArrayError),
     #[error("IO error: {0}")]
     Io(#[from] io::Error),
+    #[error("WASI error: {0}")]
+    Wasi(#[from] wasi_common::Error),
 }
 
 impl<G> From<std::sync::PoisonError<G>> for Error {
@@ -83,6 +85,10 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
             Io(_) | UnknownEnum(_) | NotImplemented | LockPoison(_) => {
                 ("java/lang/RuntimeException", self.to_string())
             }
+            Wasi(e) => (
+                "io/github/kawamuray/wasmtime/WasmtimeException",
+                e.to_string(),
+            ),
         };
 
         let jmsg = env.new_string(msg)?;
