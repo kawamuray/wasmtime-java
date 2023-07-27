@@ -26,10 +26,10 @@ jobs:
         components: rustfmt
     # Binary compatibility settings from bytecodealliance/wasmtime
     - name: Binary compatibility settings (macOS)
-      if: ${{ !startsWith(matrix.os, 'macos') }}
+      if: ${{ startsWith(matrix.os, 'macos') }}
       run: echo 'MACOSX_DEPLOYMENT_TARGET=10.9' >> $GITHUB_ENV
     - name: Binary compatibility settings (Windows)
-      if: ${{ !startsWith(matrix.os, 'windows') }}
+      if: ${{ startsWith(matrix.os, 'windows') }}
       run: echo 'RUSTFLAGS=-Ctarget-feature=+crt-static' >> $GITHUB_ENV
     # Run gradle normally to build the JNI lib
     - name: Build with Gradle
