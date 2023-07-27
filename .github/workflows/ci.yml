@@ -25,7 +25,13 @@ jobs:
         override: true
         components: rustfmt
     - name: Build with Gradle
+      if: ${{ !startsWith(matrix.os, 'ubuntu') }}
       run: ./gradlew build copyJniLib
+    - name: Build with Gradle (Linux)
+      if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      run: |
+        docker build -t build-image ./ci/docker/x86_64-linux
+        docker run --rm --volume $PWD:/build --workdir /build build-image ./gradlew build copyJniLib -x javadoc
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v2
