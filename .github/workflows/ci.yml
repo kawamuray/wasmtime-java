@@ -57,21 +57,13 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly-2022-12-11
-        override: true
-        components: rustfmt
-    - name: Build
-      run: ./gradlew build
     - name: Restore JNI libs
       uses: actions/download-artifact@v2
       with:
         name: jni-libs
         path: build/jni-libs
     - name: Build universal jar
-      run: ./gradlew universalJar
+      run: ./gradlew universalJar -x buildJniLib -x copyJniLib
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
