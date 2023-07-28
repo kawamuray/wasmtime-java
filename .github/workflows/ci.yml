@@ -49,8 +49,14 @@ jobs:
       if: matrix.target != ''
     # Run gradle normally to build the JNI lib
     - name: Build with Gradle
-      if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      if: ${{ startsWith(matrix.os, 'windows') }}
       run: ./gradlew build copyJniLib
+    - name: Build with Gradle (x86_64-macos)
+      if: matrix.build == 'x86_64-macos'
+      run: ./gradlew build copyJniLib
+    - name: Build with Gradle (aarch64-macos)
+      if: matrix.build == 'aarch64-macos'
+      run: ./gradlew build copyJniLib -x test
     # Run gradle in a docker container to build the JNI lib on Linux for old glibc compatibility
     - name: Build with Gradle (Linux)
       if: ${{ startsWith(matrix.os, 'ubuntu') }}
