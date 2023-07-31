@@ -59,18 +59,18 @@ test {
 
 static def jniLibOsClassifier() {
     def os = System.getProperty("os.name").toLowerCase()
-    def arch = System.getProperty("os.arch").toLowerCase()
-    println "jniLibOsClassifier: os=${os} arch=${arch}"
+    def target = rustTargetTriple() ?: ""
+
+    if (target != "") {
+        // use the arch part of the Rust target triple
+        return target.split("-")[0]
+    }
 
     if (os.contains("linux")) {
         return "linux"
     }
     if (os.contains("mac os") || os.contains("darwin")) {
-        if (arch.equals("aarch64")) {
-            return "macos_aarch64"
-        } else {
-            return "macos"
-        }
+        return "macos"
     }
     if (os.contains("windows")){
         return "windows"
