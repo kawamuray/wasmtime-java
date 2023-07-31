@@ -42,27 +42,22 @@ jobs:
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: echo 'RUSTFLAGS=-Ctarget-feature=+crt-static' >> $GITHUB_ENV
     - name: Set build target for cross-compiling
+      if: matrix.target != ''
       run: |
         echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
         echo JNILIB_RUST_TARGET=${{ matrix.target }} >> $GITHUB_ENV
+        echo GRADLE_ARGS="${GRADLE_ARGS} -x test">> $GITHUB_ENV
         rustup target add ${{ matrix.target }}
-      if: matrix.target != ''
-    # Run gradle normally to build the JNI lib
-    - name: Build with Gradle
-      if: ${{ startsWith(matrix.os, 'windows') }}
-      run: ./gradlew build copyJniLib
-    - name: Build with Gradle (x86_64-macos)
-      if: matrix.build == 'x86_64-macos'
-      run: ./gradlew build copyJniLib
-    - name: Build with Gradle (aarch64-macos)
-      if: matrix.build == 'aarch64-macos'
-      run: ./gradlew build copyJniLib -x test
     # Run gradle in a docker container to build the JNI lib on Linux for old glibc compatibility
     - name: Build with Gradle (Linux)
       if: ${{ startsWith(matrix.os, 'ubuntu') }}
       run: |
         docker build -t build-image ./ci/docker/x86_64-linux
         docker run --rm --volume $PWD:/build --workdir /build build-image ./gradlew build copyJniLib -x javadoc
+    # Otherwise, run gradle normally to build the JNI lib
+    - name: Build with Gradle
+      if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      run: ./gradlew build copyJniLib ${GRADLE_ARGS}
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v2
