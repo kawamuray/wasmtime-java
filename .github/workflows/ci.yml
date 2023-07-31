@@ -60,7 +60,7 @@ jobs:
       run: ./gradlew build copyJniLib ${GRADLE_ARGS}
     - name: List shared library files
       run:
-        ls -lt build/jni-libs
+        ls build/jni-libs
     - name: Save JNI lib output
       uses: actions/upload-artifact@v2
       with:
