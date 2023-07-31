@@ -60,7 +60,7 @@ test {
 static def jniLibOsClassifier() {
     def os = System.getProperty("os.name").toLowerCase()
     def arch = System.getProperty("os.arch").toLowerCase()
-    project.logger.lifecycle("jniLibOsClassifier: os=${os} arch=${arch}")
+    println "jniLibOsClassifier: os=${os} arch=${arch}"
 
     if (os.contains("linux")) {
         return "linux"
