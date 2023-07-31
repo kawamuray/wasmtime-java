@@ -59,12 +59,6 @@ test {
 
 static def jniLibOsClassifier() {
     def os = System.getProperty("os.name").toLowerCase()
-    def target = rustTargetTriple() ?: ""
-
-    if (target != "") {
-        // use the arch part of the Rust target triple
-        return target.split("-")[0]
-    }
 
     if (os.contains("linux")) {
         return "linux"
@@ -76,6 +70,11 @@ static def jniLibOsClassifier() {
         return "windows"
     }
     throw new RuntimeException("platform not supported: " + System.getProperty("os.name"))
+}
+
+static def jniLibArchClassifier() {
+    def target = rustTargetTriple() ?: ""
+    return target ? "_" + target.split("-")[0] : ""
 }
 
 static def rustTargetTriple() {
@@ -177,7 +176,7 @@ task copyJniLib(type: Copy) {
     def targetDir = rustTargetTriple() ?: ""
     from "wasmtime-jni/target/$targetDir/release"
     include '*.so', '*.dylib', "*.dll"
-    rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}"
+    rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}${jniLibArchClassifier()}"
     into new File(project.buildDir, "jni-libs")
 }
 
