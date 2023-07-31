@@ -79,10 +79,10 @@ public final class NativeLibraryLoader {
 
     @AllArgsConstructor
     private enum Platform {
-        LINUX("linux","lib" , ".so"),
-        MACOS("macos","lib", ".dylib"),
-        WINDOWS("windows","",".dll")
-        ;
+        LINUX("linux", "lib", ".so"),
+        MACOS("macos", "lib", ".dylib"),
+        MACOS_AARCH64("macos_aarch64", "lib", ".dylib"),
+        WINDOWS("windows", "", ".dll");
 
         final String classifier;
         final String prefix;
@@ -91,13 +91,17 @@ public final class NativeLibraryLoader {
 
     private static Platform detectPlatform() {
         String os = System.getProperty("os.name").toLowerCase();
+        String arch = System.getProperty("os.arch").toLowerCase();
         if (os.contains("linux")) {
             return Platform.LINUX;
         }
         if (os.contains("mac os") || os.contains("darwin")) {
+            if (arch.equals("aarch64")) {
+                return Platform.MACOS_AARCH64;
+            }
             return Platform.MACOS;
         }
-        if(os.toLowerCase().contains("windows")){
+        if (os.toLowerCase().contains("windows")) {
             return Platform.WINDOWS;
         }
         throw new RuntimeException("platform not supported: " + os);

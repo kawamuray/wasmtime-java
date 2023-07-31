@@ -59,11 +59,18 @@ test {
 
 static def jniLibOsClassifier() {
     def os = System.getProperty("os.name").toLowerCase()
+    def arch = System.getProperty("os.arch").toLowerCase()
+    project.logger.lifecycle("jniLibOsClassifier: os=${os} arch=${arch}")
+
     if (os.contains("linux")) {
         return "linux"
     }
     if (os.contains("mac os") || os.contains("darwin")) {
-        return "macos"
+        if (arch.equals("aarch64")) {
+            return "macos_aarch64"
+        } else {
+            return "macos"
+        }
     }
     if (os.contains("windows")){
         return "windows"

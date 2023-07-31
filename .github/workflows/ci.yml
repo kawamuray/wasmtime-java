@@ -58,6 +58,9 @@ jobs:
     - name: Build with Gradle
       if: ${{ !startsWith(matrix.os, 'ubuntu') }}
       run: ./gradlew build copyJniLib ${GRADLE_ARGS}
+    - name: List shared library files
+      run:
+        ls -lt build/jni-libs
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v2
