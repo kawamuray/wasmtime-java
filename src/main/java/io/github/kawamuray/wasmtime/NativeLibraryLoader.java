@@ -60,7 +60,7 @@ public final class NativeLibraryLoader {
         Platform platform = detectPlatform();
         String version = libVersion();
         String ext = platform.ext;
-        String fileName = platform.prefix + NATIVE_LIBRARY_NAME + '_' + version + '_' + platform.classifier;
+        String fileName = platform.prefix + NATIVE_LIBRARY_NAME + '_' + version + '_' + platform.os.value + '_' + platform.arch.value;
         Path tempFile = Files.createTempFile(fileName, ext);
         try (InputStream in = NativeLibraryLoader.class.getResourceAsStream('/' + fileName + ext)) {
             Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
@@ -70,7 +70,7 @@ public final class NativeLibraryLoader {
 
     private static String libVersion() throws IOException {
         final Properties props;
-        try (InputStream in = NativeLibraryLoader.class.getResourceAsStream( '/' + META_PROPS_FILE)) {
+        try (InputStream in = NativeLibraryLoader.class.getResourceAsStream('/' + META_PROPS_FILE)) {
             props = new Properties();
             props.load(in);
         }
@@ -78,13 +78,31 @@ public final class NativeLibraryLoader {
     }
 
     @AllArgsConstructor
-    private enum Platform {
-        LINUX("linux", "lib", ".so"),
-        MACOS("macos", "lib", ".dylib"),
-        MACOS_AARCH64("macos_aarch64", "lib", ".dylib"),
-        WINDOWS("windows", "", ".dll");
+    private enum Os {
+        LINUX("linux"),
+        MACOS("macos"),
+        WINDOWS("windows");
 
-        final String classifier;
+        final String value;
+    }
+
+    @AllArgsConstructor
+    private enum Arch {
+        X86_64("x86_64"),
+        AARCH64("aarch64");
+
+        final String value;
+    }
+
+    @AllArgsConstructor
+    private enum Platform {
+        LINUX(Os.LINUX, Arch.X86_64, "lib", ".so"),
+        MACOS(Os.MACOS, Arch.X86_64, "lib", ".dylib"),
+        MACOS_AARCH64(Os.MACOS, Arch.AARCH64, "lib", ".dylib"),
+        WINDOWS(Os.WINDOWS, Arch.X86_64, "", ".dll");
+
+        final Os os;
+        final Arch arch;
         final String prefix;
         final String ext;
     }

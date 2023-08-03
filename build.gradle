@@ -74,7 +74,8 @@ static def jniLibOsClassifier() {
 
 static def jniLibArchClassifier() {
     def target = rustTargetTriple() ?: ""
-    return target ? "_" + target.split("-")[0] : ""
+    // Use the first part of the rust target triple as the arch classifier if set, otherwise assume "x86_64"
+    return target ? target.split("-")[0] : "x86_64"
 }
 
 static def rustTargetTriple() {
@@ -176,7 +177,7 @@ task copyJniLib(type: Copy) {
     def targetDir = rustTargetTriple() ?: ""
     from "wasmtime-jni/target/$targetDir/release"
     include '*.so', '*.dylib', "*.dll"
-    rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}${jniLibArchClassifier()}"
+    rename "^(lib)?wasmtime_jni", "\$1wasmtime_jni_${project.version}_${jniLibOsClassifier()}_${jniLibArchClassifier()}"
     into new File(project.buildDir, "jni-libs")
 }
 
