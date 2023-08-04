@@ -8,10 +8,20 @@ on:
     branches: [ master ]
 jobs:
   build:
+    name: Build JNI lib for ${{ matrix.build }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]
+        include:
+          - build: x86_64-linux
+            os: ubuntu-latest
+          - build: x86_64-macos
+            os: macos-latest
+          - build: aarch64-macos
+            os: macos-latest
+            target: aarch64-apple-darwin
+          - build: x86_64-windows
+            os: windows-latest
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -31,16 +41,26 @@ jobs:
     - name: Binary compatibility settings (Windows)
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: echo 'RUSTFLAGS=-Ctarget-feature=+crt-static' >> $GITHUB_ENV
-    # Run gradle normally to build the JNI lib
-    - name: Build with Gradle
-      if: ${{ !startsWith(matrix.os, 'ubuntu') }}
-      run: ./gradlew build copyJniLib
+    - name: Set build target for cross-compiling
+      if: matrix.target != ''
+      run: |
+        echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
+        echo JNILIB_RUST_TARGET=${{ matrix.target }} >> $GITHUB_ENV
+        echo GRADLE_ARGS="${GRADLE_ARGS} -x test">> $GITHUB_ENV
+        rustup target add ${{ matrix.target }}
     # Run gradle in a docker container to build the JNI lib on Linux for old glibc compatibility
     - name: Build with Gradle (Linux)
       if: ${{ startsWith(matrix.os, 'ubuntu') }}
       run: |
         docker build -t build-image ./ci/docker/x86_64-linux
         docker run --rm --volume $PWD:/build --workdir /build build-image ./gradlew build copyJniLib -x javadoc
+    # Otherwise, run gradle normally to build the JNI lib
+    - name: Build with Gradle
+      if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      run: ./gradlew build copyJniLib ${GRADLE_ARGS}
+    - name: List shared library files
+      run:
+        ls build/jni-libs
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v2
