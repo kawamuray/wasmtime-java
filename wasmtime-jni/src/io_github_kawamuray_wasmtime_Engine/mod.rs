@@ -24,54 +24,63 @@ macro_rules! wrap_error {
 
 trait JniEngine<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn increment_epoch(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn new_engine(env: &JNIEnv, clazz: JClass) -> Result<jlong, Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
+    fn increment_epoch(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
+    fn new_engine(env: &mut JNIEnv<'a>, clazz: JClass<'a>) -> Result<jlong, Self::Error>;
     fn new_engine_with_config(
-        env: &JNIEnv,
-        clazz: JClass,
-        config: JObject,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
+        config: JObject<'a>,
     ) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniEngineImpl::dispose(&env, this), Default::default())
-}
-
-#[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_incrementEpoch(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
 ) {
     wrap_error!(
         env,
-        JniEngineImpl::increment_epoch(&env, this),
+        JniEngineImpl::dispose(&mut env, this),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngine(
-    env: JNIEnv,
-    clazz: JClass,
-) -> jlong {
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_incrementEpoch<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
     wrap_error!(
         env,
-        JniEngineImpl::new_engine(&env, clazz),
+        JniEngineImpl::increment_epoch(&mut env, this),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngineWithConfig__Lio_github_kawamuray_wasmtime_Config_2(
-    env: JNIEnv,
-    clazz: JClass,
-    config: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngine<'a>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
 ) -> jlong {
     wrap_error!(
         env,
-        JniEngineImpl::new_engine_with_config(&env, clazz, config),
+        JniEngineImpl::new_engine(&mut env, clazz),
+        Default::default()
+    )
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Engine_newEngineWithConfig__Lio_github_kawamuray_wasmtime_Config_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
+    config: JObject<'a>,
+) -> jlong {
+    wrap_error!(
+        env,
+        JniEngineImpl::new_engine_with_config(&mut env, clazz, config),
         Default::default()
     )
 }

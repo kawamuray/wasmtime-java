@@ -24,22 +24,22 @@ macro_rules! wrap_error {
 
 trait JniInstance<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
     fn native_get_func(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
-        name: JString,
+        name: JString<'a>,
     ) -> Result<jlong, Self::Error>;
     fn native_get_memory(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
-        name: JString,
+        name: JString<'a>,
     ) -> Result<jlong, Self::Error>;
     fn new_instance(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         store_ptr: jlong,
         module_ptr: jlong,
         externs: jobjectArray,
@@ -47,53 +47,62 @@ trait JniInstance<'a> {
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_dispose(env: JNIEnv, this: JObject) {
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
     wrap_error!(
         env,
-        JniInstanceImpl::dispose(&env, this),
+        JniInstanceImpl::dispose(&mut env, this),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc__JLjava_lang_String_2(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetFunc__JLjava_lang_String_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
-    name: JString,
+    name: JString<'a>,
 ) -> jlong {
     wrap_error!(
         env,
-        JniInstanceImpl::native_get_func(&env, this, store_ptr, name),
+        JniInstanceImpl::native_get_func(&mut env, this, store_ptr, name),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetMemory__JLjava_lang_String_2(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_nativeGetMemory__JLjava_lang_String_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
-    name: JString,
+    name: JString<'a>,
 ) -> jlong {
     wrap_error!(
         env,
-        JniInstanceImpl::native_get_memory(&env, this, store_ptr, name),
+        JniInstanceImpl::native_get_memory(&mut env, this, store_ptr, name),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_newInstance__JJ_3Lio_github_kawamuray_wasmtime_Extern_2(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Instance_newInstance__JJ_3Lio_github_kawamuray_wasmtime_Extern_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     store_ptr: jlong,
     module_ptr: jlong,
     externs: jobjectArray,
 ) -> jlong {
     wrap_error!(
         env,
-        JniInstanceImpl::new_instance(&env, clazz, store_ptr, module_ptr, externs),
+        JniInstanceImpl::new_instance(&mut env, clazz, store_ptr, module_ptr, externs),
         Default::default()
     )
 }

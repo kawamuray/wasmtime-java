@@ -25,38 +25,40 @@ macro_rules! wrap_error {
 trait JniWasiCtxBuilder<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
     fn native_build(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         envs: jobjectArray,
         args: jobjectArray,
         inherit_stdin: jboolean,
-        stdin_path: JString,
+        stdin_path: JString<'a>,
         inherit_stdout: jboolean,
-        stdout_path: JString,
+        stdout_path: JString<'a>,
         inherit_stderr: jboolean,
-        stderr_path: JString,
+        stderr_path: JString<'a>,
         preopen_dirs: jobjectArray,
     ) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtxBuilder_nativeBuild___3Ljava_lang_Object_2_3Ljava_lang_Object_2ZLjava_lang_String_2ZLjava_lang_String_2ZLjava_lang_String_2_3Ljava_lang_Object_2(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_wasi_WasiCtxBuilder_nativeBuild___3Ljava_lang_Object_2_3Ljava_lang_Object_2ZLjava_lang_String_2ZLjava_lang_String_2ZLjava_lang_String_2_3Ljava_lang_Object_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     envs: jobjectArray,
     args: jobjectArray,
     inherit_stdin: jboolean,
-    stdin_path: JString,
+    stdin_path: JString<'a>,
     inherit_stdout: jboolean,
-    stdout_path: JString,
+    stdout_path: JString<'a>,
     inherit_stderr: jboolean,
-    stderr_path: JString,
+    stderr_path: JString<'a>,
     preopen_dirs: jobjectArray,
 ) -> jlong {
     wrap_error!(
         env,
         JniWasiCtxBuilderImpl::native_build(
-            &env,
+            &mut env,
             clazz,
             envs,
             args,

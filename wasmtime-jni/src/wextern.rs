@@ -4,17 +4,17 @@ use jni::objects::JObject;
 use jni::JNIEnv;
 use wasmtime::{Extern, Func, Global, Memory, Table};
 
-pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Extern> {
+pub fn from_java<'a>(env: &mut JNIEnv<'a>, obj: JObject<'a>) -> Result<Extern> {
     let ty = env
-        .get_field(obj, "type", "Lio/github/kawamuray/wasmtime/Extern$Type;")?
+        .get_field(&obj, "type", "Lio/github/kawamuray/wasmtime/Extern$Type;")?
         .l()?;
-    let name = utils::enum_name(&env, ty)?;
+    let name = utils::enum_name(env, ty)?;
     let extn = match name.as_str() {
         "FUNC" => {
             let fn_obj = env
                 .call_method(obj, "func", "()Lio/github/kawamuray/wasmtime/Func;", &[])?
                 .l()?;
-            let func = interop::get_inner::<Func>(&env, fn_obj)?;
+            let func = interop::get_inner::<Func>(env, &fn_obj)?;
             Extern::from(func.clone())
         }
         "MEMORY" => {
@@ -26,7 +26,7 @@ pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Extern> {
                     &[],
                 )?
                 .l()?;
-            let memory = interop::get_inner::<Memory>(&env, mem_obj)?;
+            let memory = interop::get_inner::<Memory>(env, &mem_obj)?;
             Extern::from(memory.clone())
         }
         _ => return Err(Error::UnknownEnum(name)),
@@ -34,7 +34,7 @@ pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Extern> {
     Ok(extn)
 }
 
-pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
+pub fn into_java<'a>(env: &mut JNIEnv<'a>, ext: Extern) -> Result<JObject<'a>> {
     Ok(match ext {
         Extern::Func(func) => {
             let fn_obj = env.new_object(
@@ -46,7 +46,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
                 "io/github/kawamuray/wasmtime/Extern",
                 "fromFunc",
                 "(Lio/github/kawamuray/wasmtime/Func;)Lio/github/kawamuray/wasmtime/Extern;",
-                &[fn_obj.into()],
+                &[(&fn_obj).into()],
             )?
             .l()?
         }
@@ -60,7 +60,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
                 "io/github/kawamuray/wasmtime/Extern",
                 "fromMemory",
                 "(Lio/github/kawamuray/wasmtime/Memory;)Lio/github/kawamuray/wasmtime/Extern;",
-                &[mem_obj.into()],
+                &[(&mem_obj).into()],
             )?
             .l()?
         }
@@ -74,7 +74,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
                 "io/github/kawamuray/wasmtime/Extern",
                 "fromTable",
                 "(Lio/github/kawamuray/wasmtime/Table;)Lio/github/kawamuray/wasmtime/Extern;",
-                &[table_obj.into()],
+                &[(&table_obj).into()],
             )?
             .l()?
         }
@@ -88,7 +88,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
                 "io/github/kawamuray/wasmtime/Extern",
                 "fromGlobal",
                 "(Lio/github/kawamuray/wasmtime/Global;)Lio/github/kawamuray/wasmtime/Extern;",
-                &[global_obj.into()],
+                &[(&global_obj).into()],
             )?
             .l()?
         }
@@ -96,7 +96,7 @@ pub fn into_java<'a>(env: &'a JNIEnv, ext: Extern) -> Result<JObject<'a>> {
     })
 }
 
-pub fn unknown<'a>(env: &'a JNIEnv) -> Result<JObject<'a>> {
+pub fn unknown<'a>(env: &mut JNIEnv<'a>) -> Result<JObject<'a>> {
     Ok(env
         .get_static_field(
             "io/github/kawamuray/wasmtime/Extern",

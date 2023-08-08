@@ -24,35 +24,37 @@ macro_rules! wrap_error {
 
 trait JniCaller<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn data(env: &JNIEnv, this: JObject) -> Result<jobject, Self::Error>;
+    fn data(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<jobject, Self::Error>;
     fn native_get_export(
-        env: &JNIEnv,
-        this: JObject,
-        name: JString,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        name: JString<'a>,
     ) -> Result<jobject, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_data(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_data<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
 ) -> jobject {
     wrap_error!(
         env,
-        JniCallerImpl::data(&env, this),
+        JniCallerImpl::data(&mut env, this),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_nativeGetExport__Ljava_lang_String_2(
-    env: JNIEnv,
-    this: JObject,
-    name: JString,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Caller_nativeGetExport__Ljava_lang_String_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+    name: JString<'a>,
 ) -> jobject {
     wrap_error!(
         env,
-        JniCallerImpl::native_get_export(&env, this, name),
+        JniCallerImpl::native_get_export(&mut env, this, name),
         JObject::null().into_raw()
     )
 }

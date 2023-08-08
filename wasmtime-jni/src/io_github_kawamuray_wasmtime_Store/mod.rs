@@ -24,82 +24,92 @@ macro_rules! wrap_error {
 
 trait JniStore<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn engine_ptr(env: &JNIEnv, this: JObject) -> Result<jlong, Self::Error>;
-    fn gc(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
+    fn engine_ptr(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<jlong, Self::Error>;
+    fn gc(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
     fn new_store(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         engine_ptr: jlong,
-        data: JObject,
+        data: JObject<'a>,
         wasi_ctx_ptr: jlong,
     ) -> Result<jlong, Self::Error>;
     fn set_epoch_deadline(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         ticks_beyond_current: jlong,
     ) -> Result<(), Self::Error>;
-    fn stored_data(env: &JNIEnv, this: JObject) -> Result<jobject, Self::Error>;
+    fn stored_data(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<jobject, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniStoreImpl::dispose(&env, this), Default::default())
-}
-
-#[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_enginePtr(
-    env: JNIEnv,
-    this: JObject,
-) -> jlong {
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
     wrap_error!(
         env,
-        JniStoreImpl::engine_ptr(&env, this),
+        JniStoreImpl::dispose(&mut env, this),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_gc(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniStoreImpl::gc(&env, this), Default::default())
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_enginePtr<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) -> jlong {
+    wrap_error!(
+        env,
+        JniStoreImpl::engine_ptr(&mut env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore__JLjava_lang_Object_2J(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_gc<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
+    wrap_error!(env, JniStoreImpl::gc(&mut env, this), Default::default())
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_newStore__JLjava_lang_Object_2J<'a>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     engine_ptr: jlong,
-    data: JObject,
+    data: JObject<'a>,
     wasi_ctx_ptr: jlong,
 ) -> jlong {
     wrap_error!(
         env,
-        JniStoreImpl::new_store(&env, clazz, engine_ptr, data, wasi_ctx_ptr),
+        JniStoreImpl::new_store(&mut env, clazz, engine_ptr, data, wasi_ctx_ptr),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_setEpochDeadline__J(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_setEpochDeadline__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     ticks_beyond_current: jlong,
 ) {
     wrap_error!(
         env,
-        JniStoreImpl::set_epoch_deadline(&env, this, ticks_beyond_current),
+        JniStoreImpl::set_epoch_deadline(&mut env, this, ticks_beyond_current),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Store_storedData(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Store_storedData<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
 ) -> jobject {
     wrap_error!(
         env,
-        JniStoreImpl::stored_data(&env, this),
+        JniStoreImpl::stored_data(&mut env, this),
         JObject::null().into_raw()
     )
 }

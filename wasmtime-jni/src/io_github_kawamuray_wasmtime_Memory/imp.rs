@@ -12,34 +12,34 @@ pub(super) struct JniMemoryImpl;
 impl<'a> JniMemory<'a> for JniMemoryImpl {
     type Error = errors::Error;
 
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::dispose_inner::<Memory>(&env, this)?;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error> {
+        interop::dispose_inner::<Memory>(env, &this)?;
         Ok(())
     }
 
     fn native_buffer(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
     ) -> Result<jobject, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let mem = interop::get_inner::<Memory>(&env, this)?;
+        let mem = interop::get_inner::<Memory>(env, &this)?;
         let ptr = mem.data_mut(&mut *store);
         Ok(unsafe { env.new_direct_byte_buffer(ptr.as_mut_ptr(), ptr.len()) }?.into_raw())
     }
 
     fn native_data_size(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
     ) -> Result<jlong, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let mem = interop::get_inner::<Memory>(&env, this)?;
+        let mem = interop::get_inner::<Memory>(env, &this)?;
         Ok(mem.data_size(&mut *store) as jlong)
     }
 
     fn new_memory(
-        _env: &JNIEnv,
+        _env: &mut JNIEnv<'a>,
         _clazz: JClass,
         store_ptr: jlong,
         min: jlong,
@@ -57,20 +57,24 @@ impl<'a> JniMemory<'a> for JniMemoryImpl {
         Ok(interop::into_raw::<Memory>(mem))
     }
 
-    fn native_size(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<jint, Self::Error> {
+    fn native_size(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+    ) -> Result<jint, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let mem = interop::get_inner::<Memory>(&env, this)?;
+        let mem = interop::get_inner::<Memory>(env, &this)?;
         Ok(mem.size(&mut *store) as jint)
     }
 
     fn native_grow(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
         delta_pages: jlong,
     ) -> Result<jint, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let mem = interop::get_inner::<Memory>(&env, this)?;
+        let mem = interop::get_inner::<Memory>(env, &this)?;
         Ok(mem.grow(&mut *store, delta_pages as u64)? as jint)
     }
 }

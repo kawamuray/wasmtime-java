@@ -15,36 +15,32 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
     type Error = errors::Error;
 
     fn new_func(
-        env: &JNIEnv,
-        _clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        _clazz: JClass<'a>,
         store_ptr: jlong,
-        fn_type: JObject,
+        fn_type: JObject<'a>,
         index: jint,
     ) -> Result<jlong, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
 
-        let param_types = wval::types_from_java(
-            &env,
-            env.get_field(
-                fn_type,
+        let param_types_objs = env
+            .get_field(
+                &fn_type,
                 "params",
                 "[Lio/github/kawamuray/wasmtime/Val$Type;",
             )?
             .l()?
-            .into_raw(),
-        )?
-        .into_boxed_slice();
-        let result_types = wval::types_from_java(
-            &env,
-            env.get_field(
-                fn_type,
+            .into_raw();
+        let param_types = wval::types_from_java(env, param_types_objs)?.into_boxed_slice();
+        let result_type_objs = env
+            .get_field(
+                &fn_type,
                 "results",
                 "[Lio/github/kawamuray/wasmtime/Val$Type;",
             )?
             .l()?
-            .into_raw(),
-        )?
-        .into_boxed_slice();
+            .into_raw();
+        let result_types = wval::types_from_java(env, result_type_objs)?.into_boxed_slice();
         let fn_type = FuncType::new(param_types.to_vec(), result_types.to_vec());
 
         let jvm = env.get_java_vm()?;
@@ -65,17 +61,17 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
     }
 
     fn native_call(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
         args: jobjectArray,
     ) -> Result<jobjectArray, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let func = interop::get_inner::<Func>(&env, this)?;
+        let func = interop::get_inner::<Func>(env, &this)?;
 
-        let iter = utils::JavaArrayIter::new(env, args)?;
+        let mut iter = utils::JavaArrayIter::new(env, args)?;
         let mut wasm_params = Vec::with_capacity(iter.len());
-        for val in iter {
+        while let Some(val) = iter.next(env) {
             let wasm_val = wval::from_java(env, val?)?;
             wasm_params.push(wasm_val);
         }
@@ -100,8 +96,8 @@ impl<'a> JniFunc<'a> for JniFuncImpl {
         utils::into_java_array(env, "io/github/kawamuray/wasmtime/Val", java_results)
     }
 
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::dispose_inner::<Func>(&env, this)?;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error> {
+        interop::dispose_inner::<Func>(env, &this)?;
         Ok(())
     }
 }
@@ -113,7 +109,7 @@ struct FuncFinalizer {
 
 impl Drop for FuncFinalizer {
     fn drop(&mut self) {
-        let env = self.jvm.attach_current_thread().unwrap();
+        let mut env = self.jvm.attach_current_thread().unwrap();
         env.call_static_method(
             "io/github/kawamuray/wasmtime/Func",
             "dropTrampoline",
@@ -134,17 +130,15 @@ fn invoke_trampoline<'a, T>(
     _finalizer: &FuncFinalizer,
 ) -> Result<anyhow::Result<()>> {
     // TODO: this should be attach_current_thread_permanently?
-    let env = jvm.attach_current_thread()?;
+    let mut env = jvm.attach_current_thread()?;
 
     // Convert Rust param values into Java's
-    let jparams = utils::into_java_array(
-        &env,
-        "io/github/kawamuray/wasmtime/Val",
-        params
-            .into_iter()
-            .map(|param| wval::into_java(&env, param.clone()))
-            .collect::<Result<Vec<_>, _>>()?,
-    )?;
+    let jparam_values = params
+        .into_iter()
+        .map(|param| wval::into_java(&mut env, param.clone()))
+        .collect::<Result<Vec<_>, _>>()?;
+    let jparams =
+        utils::into_java_array(&mut env, "io/github/kawamuray/wasmtime/Val", jparam_values)?;
     let jresults = env.new_object_array(
         results.len() as jint,
         "io/github/kawamuray/wasmtime/Val",
@@ -160,8 +154,8 @@ fn invoke_trampoline<'a, T>(
         &[
             caller_ptr.into(),
             index.into(),
-            unsafe { JObject::from_raw(jparams) }.into(),
-            unsafe { JObject::from_raw(jresults) }.into(),
+            (&unsafe { JObject::from_raw(jparams) }).into(),
+            (&unsafe { JObject::from_raw(jresults.as_raw()) }).into(),
         ],
     );
     if let Err(e) = call_result {
@@ -169,7 +163,7 @@ fn invoke_trampoline<'a, T>(
             jni::errors::Error::JavaException => {
                 let throwable = env.exception_occurred()?;
                 env.exception_clear()?;
-                let wasm_error = wfuncerror::from_java(&env, throwable)?;
+                let wasm_error = wfuncerror::from_java(&mut env, throwable)?;
                 return Ok(Err(wasm_error));
             }
             _ => return Err(e.into()),
@@ -177,11 +171,14 @@ fn invoke_trampoline<'a, T>(
     }
 
     // Fill java results value into Rust's
-    for (i, rval) in utils::JavaArrayIter::new(&env, jresults)?.enumerate() {
+    let mut i = 0;
+    let mut iter = utils::JavaArrayIter::new(&mut env, jresults.into_raw())?;
+    while let Some(rval) = iter.next(&mut env) {
         let rval = rval?;
         if !rval.is_null() {
-            results[i] = wval::from_java(&env, rval)?;
+            results[i] = wval::from_java(&mut env, rval)?;
         }
+        i += 1;
     }
 
     Ok(Ok(()))

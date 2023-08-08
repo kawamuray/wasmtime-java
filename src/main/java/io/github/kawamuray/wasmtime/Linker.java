@@ -27,8 +27,8 @@ public class Linker implements Disposable {
         nativeModule(store.innerPtr(), moduleName, module.innerPtr());
     }
 
-    public void define(String moduleName, String name, Extern extern) {
-        nativeDefine(moduleName, name, extern);
+    public <T> void define(Store<T> store, String moduleName, String name, Extern extern) {
+        nativeDefine(store.innerPtr(), moduleName, name, extern);
     }
 
     public <T> Optional<Extern> get(Store<T> store, String module, String name) {
@@ -61,7 +61,7 @@ public class Linker implements Disposable {
 
     private native void nativeModule(long storePtr, String moduleName, long modulePtr);
 
-    private native void nativeDefine(String moduleName, String name, Extern externItem);
+    private native void nativeDefine(long storePtr, String moduleName, String name, Extern externItem);
 
     private native Extern nativeGet(long storePtr, String module, String name);
 

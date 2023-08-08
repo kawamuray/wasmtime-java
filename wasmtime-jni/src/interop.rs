@@ -106,15 +106,20 @@ macro_rules! non_null {
 /// A port of `JNIEnv::set_rust_field` with type `T` modified to not require `Send`.
 /// It still preserves Mutex around the value, not for atomic access but for making sure
 /// the unique owner at the time it is taken.
-pub fn set_field<'a, O, S, T>(env: &JNIEnv<'a>, obj: O, field: S, rust_object: T) -> JniResult<()>
+pub fn set_field<'a, O, S, T>(
+    env: &mut JNIEnv<'a>,
+    obj: O,
+    field: S,
+    rust_object: T,
+) -> JniResult<()>
 where
-    O: Into<JObject<'a>>,
+    O: AsRef<JObject<'a>>,
     S: AsRef<str>,
     T: 'static,
 {
-    let obj = obj.into();
+    let obj = obj.as_ref();
     let class = env.auto_local(env.get_object_class(obj)?);
-    let field_id: JFieldID = (&class, &field, "J").lookup(env)?;
+    let field_id = Desc::<JFieldID>::lookup((&class, &field, "J"), env)?;
 
     let _guard = env.lock_obj(obj)?;
 
@@ -134,16 +139,16 @@ where
 
 /// A port of `JNIEnv::get_rust_field` with type `T` modified to not require `Send`.
 pub fn get_field<'a, O, S, T>(
-    env: &JNIEnv<'a>,
+    env: &mut JNIEnv<'a>,
     obj: O,
     field: S,
 ) -> JniResult<ReentrantReference<'a, T>>
 where
-    O: Into<JObject<'a>>,
+    O: AsRef<JObject<'a>>,
     S: Into<JNIString>,
     T: 'static,
 {
-    let obj = obj.into();
+    let obj = obj.as_ref();
     let _guard = env.lock_obj(obj)?;
 
     let ptr = env.get_field(obj, field, "J")?.j()? as *mut ReentrantLock<T>;
@@ -154,24 +159,24 @@ where
     }
 }
 
-fn inner_ptr<'a>(env: &JNIEnv<'a>, obj: JObject<'a>) -> JniResult<jlong> {
+fn inner_ptr<'a>(env: &mut JNIEnv<'a>, obj: &JObject<'a>) -> JniResult<jlong> {
     let class = env.auto_local(env.get_object_class(obj)?);
-    let field_id: JFieldID = (&class, INNER_PTR_FIELD, "J").lookup(env)?;
+    let field_id = Desc::<JFieldID>::lookup((&class, INNER_PTR_FIELD, "J"), env)?;
     Ok(env
         .get_field_unchecked(obj, field_id, ReturnType::Primitive(Primitive::Long))?
         .j()?)
 }
 
 /// A port of `JNIEnv::take_rust_field` with type `T` modified to not require `Send`.
-pub fn take_field<'a, O, S, T>(env: &JNIEnv<'a>, obj: O, field: S) -> JniResult<T>
+pub fn take_field<'a, O, S, T>(env: &mut JNIEnv<'a>, obj: O, field: S) -> JniResult<T>
 where
-    O: Into<JObject<'a>>,
+    O: AsRef<JObject<'a>>,
     S: AsRef<str>,
     T: 'static,
 {
-    let obj = obj.into();
+    let obj = obj.as_ref();
     let class = env.auto_local(env.get_object_class(obj)?);
-    let field_id: JFieldID = (&class, &field, "J").lookup(env)?;
+    let field_id = Desc::<JFieldID>::lookup((&class, &field, "J"), env)?;
 
     let _guard = env.lock_obj(obj)?;
     let mbox = {
@@ -200,28 +205,35 @@ where
     Ok(mbox.mutex.into_inner().unwrap())
 }
 
-pub fn set_inner<'a, O, S, T>(env: &JNIEnv<'a>, obj: JObject<'a>, rust_object: T) -> JniResult<()>
+pub fn set_inner<'a, O, S, T>(
+    env: &mut JNIEnv<'a>,
+    obj: JObject<'a>,
+    rust_object: T,
+) -> JniResult<()>
 where
     T: 'static,
 {
     set_field(env, obj, INNER_PTR_FIELD, rust_object)
 }
 
-pub fn get_inner<'a, T>(env: &JNIEnv<'a>, obj: JObject<'a>) -> JniResult<ReentrantReference<'a, T>>
+pub fn get_inner<'a, T>(
+    env: &mut JNIEnv<'a>,
+    obj: &JObject<'a>,
+) -> JniResult<ReentrantReference<'a, T>>
 where
     T: 'static,
 {
     get_field(env, obj, INNER_PTR_FIELD)
 }
 
-pub fn take_inner<'a, T>(env: &JNIEnv<'a>, obj: JObject<'a>) -> JniResult<T>
+pub fn take_inner<'a, T>(env: &mut JNIEnv<'a>, obj: &JObject<'a>) -> JniResult<T>
 where
     T: 'static,
 {
     take_field(env, obj, INNER_PTR_FIELD)
 }
 
-pub fn dispose_inner<'a, T>(env: &JNIEnv<'a>, obj: JObject<'a>) -> JniResult<()>
+pub fn dispose_inner<'a, T>(env: &mut JNIEnv<'a>, obj: &JObject<'a>) -> JniResult<()>
 where
     T: 'static,
 {

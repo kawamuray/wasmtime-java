@@ -4,7 +4,7 @@ use jni::objects::JObject;
 use jni::JNIEnv;
 use wasmtime::Trap;
 
-pub fn from_java(env: &JNIEnv, trap: JObject) -> Result<Trap> {
+pub fn from_java(env: &mut JNIEnv, trap: JObject) -> Result<Trap> {
     Ok(match utils::enum_name(env, trap)?.as_str() {
         "STACK_OVERFLOW" => Trap::StackOverflow,
         "MEMORY_OUT_OF_BOUNDS" => Trap::MemoryOutOfBounds,
@@ -23,7 +23,7 @@ pub fn from_java(env: &JNIEnv, trap: JObject) -> Result<Trap> {
     })
 }
 
-pub fn into_java<'a>(env: &'a JNIEnv, trap: &Trap) -> jni::errors::Result<JObject<'a>> {
+pub fn into_java<'a>(env: &mut JNIEnv<'a>, trap: &Trap) -> jni::errors::Result<JObject<'a>> {
     let name = match trap {
         Trap::StackOverflow => "STACK_OVERFLOW",
         Trap::MemoryOutOfBounds => "MEMORY_OUT_OF_BOUNDS",

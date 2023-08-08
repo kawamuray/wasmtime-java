@@ -12,9 +12,13 @@ pub(super) struct JniGlobalImpl;
 impl<'a> JniGlobal<'a> for JniGlobalImpl {
     type Error = errors::Error;
 
-    fn native_get(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<jobject, Self::Error> {
+    fn native_get(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+    ) -> Result<jobject, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let global = interop::get_inner::<Global>(&env, this)?;
+        let global = interop::get_inner::<Global>(env, &this)?;
 
         let val = global.get(&mut *store);
 
@@ -22,20 +26,24 @@ impl<'a> JniGlobal<'a> for JniGlobalImpl {
     }
 
     fn native_set(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
-        val: JObject,
+        val: JObject<'a>,
     ) -> Result<(), Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let global = interop::get_inner::<Global>(&env, this)?;
+        let global = interop::get_inner::<Global>(env, &this)?;
         global.set(&mut *store, wval::from_java(env, val)?)?;
         Ok(())
     }
 
-    fn native_mutable(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<u8, Self::Error> {
+    fn native_mutable(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+    ) -> Result<u8, Self::Error> {
         let mut store = interop::ref_from_raw::<Store<StoreData>>(store_ptr)?;
-        let global = interop::get_inner::<Global>(&env, this)?;
+        let global = interop::get_inner::<Global>(env, &this)?;
         let ty = global.ty(&mut *store);
         match ty.mutability() {
             wasmtime::Mutability::Const => Ok(0),
@@ -43,8 +51,8 @@ impl<'a> JniGlobal<'a> for JniGlobalImpl {
         }
     }
 
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error> {
-        interop::dispose_inner::<Global>(&env, this)?;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error> {
+        interop::dispose_inner::<Global>(env, &this)?;
         Ok(())
     }
 }

@@ -24,52 +24,63 @@ macro_rules! wrap_error {
 
 trait JniFunc<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
     fn native_call(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
         args: jobjectArray,
     ) -> Result<jobjectArray, Self::Error>;
     fn new_func(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         store_ptr: jlong,
-        fn_type: JObject,
+        fn_type: JObject<'a>,
         index: jint,
     ) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Func_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniFuncImpl::dispose(&env, this), Default::default())
+extern "system" fn Java_io_github_kawamuray_wasmtime_Func_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
+    wrap_error!(
+        env,
+        JniFuncImpl::dispose(&mut env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall__J_3Lio_github_kawamuray_wasmtime_Val_2(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Func_nativeCall__J_3Lio_github_kawamuray_wasmtime_Val_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
     args: jobjectArray,
 ) -> jobjectArray {
     wrap_error!(
         env,
-        JniFuncImpl::native_call(&env, this, store_ptr, args),
+        JniFuncImpl::native_call(&mut env, this, store_ptr, args),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Func_newFunc__JLio_github_kawamuray_wasmtime_FuncType_2I(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Func_newFunc__JLio_github_kawamuray_wasmtime_FuncType_2I<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     store_ptr: jlong,
-    fn_type: JObject,
+    fn_type: JObject<'a>,
     index: jint,
 ) -> jlong {
     wrap_error!(
         env,
-        JniFuncImpl::new_func(&env, clazz, store_ptr, fn_type, index),
+        JniFuncImpl::new_func(&mut env, clazz, store_ptr, fn_type, index),
         Default::default()
     )
 }
