@@ -44,7 +44,7 @@ public class MemoryInterop {
              Module module = Module.fromFile(store.engine(), WASM_PATH)) {
 
             WasiCtx.addToLinker(linker);
-            linker.define("xyz", "poll_word", Extern.fromFunc(pollWordFn));
+            linker.define(store, "xyz", "poll_word", Extern.fromFunc(pollWordFn));
             linker.module(store, "", module);
 
             try (Memory mem = linker.get(store, "", "memory").get().memory();

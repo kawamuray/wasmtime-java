@@ -39,8 +39,10 @@ impl<G> From<std::sync::PoisonError<G>> for Error {
     }
 }
 
-impl<'a> Desc<'a, JThrowable<'a>> for Error {
-    fn lookup(self, env: &JNIEnv<'a>) -> jni::errors::Result<JThrowable<'a>> {
+unsafe impl<'a> Desc<'a, JThrowable<'a>> for Error {
+    type Output = JThrowable<'a>;
+
+    fn lookup(self, env: &mut JNIEnv<'a>) -> jni::errors::Result<Self::Output> {
         use Error::*;
         let (ex_class, msg) = match &self {
             Jni(e) => {
@@ -65,7 +67,7 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
                 let jtrap_ex = env.new_object(
                     "io/github/kawamuray/wasmtime/WasmFunctionError$TrapError",
                     "(Lio/github/kawamuray/wasmtime/Trap;)V",
-                    &[jtrap.into()],
+                    &[(&jtrap).into()],
                 )?;
                 return Ok(jtrap_ex.into());
             }
@@ -93,7 +95,7 @@ impl<'a> Desc<'a, JThrowable<'a>> for Error {
 
         let jmsg = env.new_string(msg)?;
         Ok(env
-            .new_object(ex_class, "(Ljava/lang/String;)V", &[jmsg.into()])?
+            .new_object(ex_class, "(Ljava/lang/String;)V", &[(&jmsg).into()])?
             .into())
     }
 }

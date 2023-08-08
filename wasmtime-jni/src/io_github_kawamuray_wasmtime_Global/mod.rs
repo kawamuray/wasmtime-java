@@ -12,7 +12,10 @@ macro_rules! wrap_error {
         match $body {
             Ok(v) => v,
             Err(e) => {
-                $env.throw(e).expect("error in throwing exception");
+                if let Err(err) = $env.throw(e) {
+                    $env.exception_describe().ok();
+                    panic!("error in throwing exception: {}", err);
+                }
                 $default
             }
         }
@@ -21,54 +24,75 @@ macro_rules! wrap_error {
 
 trait JniGlobal<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn native_get(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<jobject, Self::Error>;
-    fn native_set(
-        env: &JNIEnv,
-        this: JObject,
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
+    fn native_get(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
-        val: JObject,
+    ) -> Result<jobject, Self::Error>;
+    fn native_mutable(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+    ) -> Result<jboolean, Self::Error>;
+    fn native_set(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+        val: JObject<'a>,
     ) -> Result<(), Self::Error>;
-    fn native_mutable(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<u8, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Global_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniGlobalImpl::dispose(&env, this), Default::default())
-}
-
-#[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeGet(
-    env: JNIEnv,
-    this: JObject,
-    store_ptr: jlong,
-) -> jobjectArray {
+extern "system" fn Java_io_github_kawamuray_wasmtime_Global_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
     wrap_error!(
         env,
-        JniGlobalImpl::native_get(&env, this, store_ptr),
+        JniGlobalImpl::dispose(&mut env, this),
+        Default::default()
+    )
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeGet__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+    store_ptr: jlong,
+) -> jobject {
+    wrap_error!(
+        env,
+        JniGlobalImpl::native_get(&mut env, this, store_ptr),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeSet(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeMutable__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
-    val: JObject,
-) {
+) -> jboolean {
     wrap_error!(
         env,
-        JniGlobalImpl::native_set(&env, this, store_ptr, val),
-        ()
+        JniGlobalImpl::native_mutable(&mut env, this, store_ptr),
+        Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeMutable(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Global_nativeSet__JLio_github_kawamuray_wasmtime_Val_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
-) -> jboolean {
-    wrap_error!(env, JniGlobalImpl::native_mutable(&env, this, store_ptr), 0)
+    val: JObject<'a>,
+) {
+    wrap_error!(
+        env,
+        JniGlobalImpl::native_set(&mut env, this, store_ptr, val),
+        Default::default()
+    )
 }

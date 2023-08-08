@@ -24,83 +24,92 @@ macro_rules! wrap_error {
 
 trait JniModule<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn imports(env: &JNIEnv, this: JObject) -> Result<jobjectArray, Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
+    fn imports(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<jobjectArray, Self::Error>;
     fn new_from_binary(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         engine_ptr: jlong,
         bytes: jbyteArray,
     ) -> Result<jlong, Self::Error>;
     fn new_from_file(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         engine_ptr: jlong,
-        file_name: JString,
+        file_name: JString<'a>,
     ) -> Result<jlong, Self::Error>;
     fn new_module(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         engine_ptr: jlong,
         bytes: jbyteArray,
     ) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniModuleImpl::dispose(&env, this), Default::default())
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
+    wrap_error!(
+        env,
+        JniModuleImpl::dispose(&mut env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_imports(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_imports<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
 ) -> jobjectArray {
     wrap_error!(
         env,
-        JniModuleImpl::imports(&env, this),
+        JniModuleImpl::imports(&mut env, this),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromBinary__J_3B(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromBinary__J_3B<'a>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     engine_ptr: jlong,
     bytes: jbyteArray,
 ) -> jlong {
     wrap_error!(
         env,
-        JniModuleImpl::new_from_binary(&env, clazz, engine_ptr, bytes),
+        JniModuleImpl::new_from_binary(&mut env, clazz, engine_ptr, bytes),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromFile__JLjava_lang_String_2(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newFromFile__JLjava_lang_String_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     engine_ptr: jlong,
-    file_name: JString,
+    file_name: JString<'a>,
 ) -> jlong {
     wrap_error!(
         env,
-        JniModuleImpl::new_from_file(&env, clazz, engine_ptr, file_name),
+        JniModuleImpl::new_from_file(&mut env, clazz, engine_ptr, file_name),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newModule__J_3B(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Module_newModule__J_3B<'a>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     engine_ptr: jlong,
     bytes: jbyteArray,
 ) -> jlong {
     wrap_error!(
         env,
-        JniModuleImpl::new_module(&env, clazz, engine_ptr, bytes),
+        JniModuleImpl::new_module(&mut env, clazz, engine_ptr, bytes),
         Default::default()
     )
 }

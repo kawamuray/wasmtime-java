@@ -24,108 +24,127 @@ macro_rules! wrap_error {
 
 trait JniLinker<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
     fn native_define(
-        env: &JNIEnv,
-        this: JObject,
-        module_name: JString,
-        name: JString,
-        extern_item: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+        module_name: JString<'a>,
+        name: JString<'a>,
+        extern_item: JObject<'a>,
     ) -> Result<(), Self::Error>;
     fn native_externs(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
     ) -> Result<jobjectArray, Self::Error>;
     fn native_get(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
-        module: JString,
-        name: JString,
+        module: JString<'a>,
+        name: JString<'a>,
     ) -> Result<jobject, Self::Error>;
     fn native_module(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
-        module_name: JString,
+        module_name: JString<'a>,
         module_ptr: jlong,
     ) -> Result<(), Self::Error>;
-    fn new_linker(env: &JNIEnv, clazz: JClass, engine_ptr: jlong) -> Result<jlong, Self::Error>;
+    fn new_linker(
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
+        engine_ptr: jlong,
+    ) -> Result<jlong, Self::Error>;
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniLinkerImpl::dispose(&env, this), Default::default())
-}
-
-#[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeDefine__Ljava_lang_String_2Ljava_lang_String_2Lio_github_kawamuray_wasmtime_Extern_2(
-    env: JNIEnv,
-    this: JObject,
-    module_name: JString,
-    name: JString,
-    extern_item: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
 ) {
     wrap_error!(
         env,
-        JniLinkerImpl::native_define(&env, this, module_name, name, extern_item),
+        JniLinkerImpl::dispose(&mut env, this),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns__J(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeDefine__JLjava_lang_String_2Ljava_lang_String_2Lio_github_kawamuray_wasmtime_Extern_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+    store_ptr: jlong,
+    module_name: JString<'a>,
+    name: JString<'a>,
+    extern_item: JObject<'a>,
+) {
+    wrap_error!(
+        env,
+        JniLinkerImpl::native_define(&mut env, this, store_ptr, module_name, name, extern_item),
+        Default::default()
+    )
+}
+
+#[no_mangle]
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeExterns__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
 ) -> jobjectArray {
     wrap_error!(
         env,
-        JniLinkerImpl::native_externs(&env, this, store_ptr),
+        JniLinkerImpl::native_externs(&mut env, this, store_ptr),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet__JLjava_lang_String_2Ljava_lang_String_2(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeGet__JLjava_lang_String_2Ljava_lang_String_2<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
-    module: JString,
-    name: JString,
+    module: JString<'a>,
+    name: JString<'a>,
 ) -> jobject {
     wrap_error!(
         env,
-        JniLinkerImpl::native_get(&env, this, store_ptr, module, name),
+        JniLinkerImpl::native_get(&mut env, this, store_ptr, module, name),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule__JLjava_lang_String_2J(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_nativeModule__JLjava_lang_String_2J<
+    'a,
+>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
-    module_name: JString,
+    module_name: JString<'a>,
     module_ptr: jlong,
 ) {
     wrap_error!(
         env,
-        JniLinkerImpl::native_module(&env, this, store_ptr, module_name, module_ptr),
+        JniLinkerImpl::native_module(&mut env, this, store_ptr, module_name, module_ptr),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_newLinker__J(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Linker_newLinker__J<'a>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     engine_ptr: jlong,
 ) -> jlong {
     wrap_error!(
         env,
-        JniLinkerImpl::new_linker(&env, clazz, engine_ptr),
+        JniLinkerImpl::new_linker(&mut env, clazz, engine_ptr),
         Default::default()
     )
 }

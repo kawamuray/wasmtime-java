@@ -24,24 +24,31 @@ macro_rules! wrap_error {
 
 trait JniMemory<'a> {
     type Error: Desc<'a, JThrowable<'a>>;
-    fn dispose(env: &JNIEnv, this: JObject) -> Result<(), Self::Error>;
-    fn native_buffer(env: &JNIEnv, this: JObject, store_ptr: jlong)
-        -> Result<jobject, Self::Error>;
+    fn dispose(env: &mut JNIEnv<'a>, this: JObject<'a>) -> Result<(), Self::Error>;
+    fn native_buffer(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+    ) -> Result<jobject, Self::Error>;
     fn native_data_size(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
     ) -> Result<jlong, Self::Error>;
     fn native_grow(
-        env: &JNIEnv,
-        this: JObject,
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
         store_ptr: jlong,
         delta_pages: jlong,
     ) -> Result<jint, Self::Error>;
-    fn native_size(env: &JNIEnv, this: JObject, store_ptr: jlong) -> Result<jint, Self::Error>;
+    fn native_size(
+        env: &mut JNIEnv<'a>,
+        this: JObject<'a>,
+        store_ptr: jlong,
+    ) -> Result<jint, Self::Error>;
     fn new_memory(
-        env: &JNIEnv,
-        clazz: JClass,
+        env: &mut JNIEnv<'a>,
+        clazz: JClass<'a>,
         inner_ptr: jlong,
         minimum: jlong,
         maximum: jlong,
@@ -50,67 +57,74 @@ trait JniMemory<'a> {
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_dispose(env: JNIEnv, this: JObject) {
-    wrap_error!(env, JniMemoryImpl::dispose(&env, this), Default::default())
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_dispose<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
+) {
+    wrap_error!(
+        env,
+        JniMemoryImpl::dispose(&mut env, this),
+        Default::default()
+    )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeBuffer__J(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeBuffer__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
 ) -> jobject {
     wrap_error!(
         env,
-        JniMemoryImpl::native_buffer(&env, this, store_ptr),
+        JniMemoryImpl::native_buffer(&mut env, this, store_ptr),
         JObject::null().into_raw()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeDataSize__J(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeDataSize__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
 ) -> jlong {
     wrap_error!(
         env,
-        JniMemoryImpl::native_data_size(&env, this, store_ptr),
+        JniMemoryImpl::native_data_size(&mut env, this, store_ptr),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeGrow__JJ(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeGrow__JJ<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
     delta_pages: jlong,
 ) -> jint {
     wrap_error!(
         env,
-        JniMemoryImpl::native_grow(&env, this, store_ptr, delta_pages),
+        JniMemoryImpl::native_grow(&mut env, this, store_ptr, delta_pages),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeSize__J(
-    env: JNIEnv,
-    this: JObject,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_nativeSize__J<'a>(
+    mut env: JNIEnv<'a>,
+    this: JObject<'a>,
     store_ptr: jlong,
 ) -> jint {
     wrap_error!(
         env,
-        JniMemoryImpl::native_size(&env, this, store_ptr),
+        JniMemoryImpl::native_size(&mut env, this, store_ptr),
         Default::default()
     )
 }
 
 #[no_mangle]
-extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_newMemory__JJJZ(
-    env: JNIEnv,
-    clazz: JClass,
+extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_newMemory__JJJZ<'a>(
+    mut env: JNIEnv<'a>,
+    clazz: JClass<'a>,
     inner_ptr: jlong,
     minimum: jlong,
     maximum: jlong,
@@ -118,7 +132,7 @@ extern "system" fn Java_io_github_kawamuray_wasmtime_Memory_newMemory__JJJZ(
 ) -> jlong {
     wrap_error!(
         env,
-        JniMemoryImpl::new_memory(&env, clazz, inner_ptr, minimum, maximum, is64),
+        JniMemoryImpl::new_memory(&mut env, clazz, inner_ptr, minimum, maximum, is64),
         Default::default()
     )
 }

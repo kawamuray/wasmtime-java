@@ -1,18 +1,18 @@
 use crate::errors::{Error, Result};
-use crate::{utils};
+use crate::utils;
+use crate::utils::into_java_array;
 use jni::objects::JObject;
 use jni::sys::jobjectArray;
 use jni::JNIEnv;
 use wasmtime::{Val, ValType};
-use crate::utils::into_java_array;
 
 pub const VAL_TYPE: &str = "io/github/kawamuray/wasmtime/Val$Type";
 
-pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Val> {
+pub fn from_java<'a>(env: &mut JNIEnv<'a>, obj: JObject<'a>) -> Result<Val> {
     let ty = env
-        .get_field(obj, "type", "Lio/github/kawamuray/wasmtime/Val$Type;")?
+        .get_field(&obj, "type", "Lio/github/kawamuray/wasmtime/Val$Type;")?
         .l()?;
-    let name = utils::enum_name(&env, ty)?;
+    let name = utils::enum_name(env, ty)?;
     Ok(match name.as_str() {
         "I32" => {
             let val = env.call_method(obj, "i32", "()I", &[])?.i()?;
@@ -34,7 +34,7 @@ pub fn from_java(env: &JNIEnv, obj: JObject) -> Result<Val> {
     })
 }
 
-pub fn into_java<'a>(env: &'a JNIEnv, val: Val) -> Result<JObject<'a>> {
+pub fn into_java<'a>(env: &mut JNIEnv<'a>, val: Val) -> Result<JObject<'a>> {
     Ok(match val {
         Val::I32(v) => env
             .call_static_method(
@@ -72,8 +72,8 @@ pub fn into_java<'a>(env: &'a JNIEnv, val: Val) -> Result<JObject<'a>> {
     })
 }
 
-pub fn type_from_java(env: &JNIEnv, obj: JObject) -> Result<ValType> {
-    let name = utils::enum_name(&env, obj)?;
+pub fn type_from_java(env: &mut JNIEnv, obj: JObject) -> Result<ValType> {
+    let name = utils::enum_name(env, obj)?;
     Ok(match name.as_str() {
         "I32" => ValType::I32,
         "I64" => ValType::I64,
@@ -83,13 +83,16 @@ pub fn type_from_java(env: &JNIEnv, obj: JObject) -> Result<ValType> {
     })
 }
 
-fn type_from_enum<'a>(env: &'a JNIEnv, ty: &'a str) -> Result<JObject<'a>> {
+fn type_from_enum<'a>(env: &mut JNIEnv<'a>, ty: &'a str) -> Result<JObject<'a>> {
     Ok(env
         .get_static_field(VAL_TYPE, ty, "Lio/github/kawamuray/wasmtime/Val$Type;")?
         .l()?)
 }
 
-pub fn types_into_java_array(env: &JNIEnv, it: impl ExactSizeIterator<Item=ValType>) -> Result<jobjectArray> {
+pub fn types_into_java_array(
+    env: &mut JNIEnv,
+    it: impl ExactSizeIterator<Item = ValType>,
+) -> Result<jobjectArray> {
     let mut vec = Vec::with_capacity(it.len());
     for result in it {
         let x = self::type_into_java(env, result)?;
@@ -98,7 +101,7 @@ pub fn types_into_java_array(env: &JNIEnv, it: impl ExactSizeIterator<Item=ValTy
     into_java_array(env, VAL_TYPE, vec)
 }
 
-pub fn type_into_java<'a>(env: &'a JNIEnv, val: ValType) -> Result<JObject<'a>> {
+pub fn type_into_java<'a>(env: &mut JNIEnv<'a>, val: ValType) -> Result<JObject<'a>> {
     match val {
         ValType::I32 => type_from_enum(env, "I32"),
         ValType::I64 => type_from_enum(env, "I64"),
@@ -110,10 +113,10 @@ pub fn type_into_java<'a>(env: &'a JNIEnv, val: ValType) -> Result<JObject<'a>> 
     }
 }
 
-pub fn types_from_java(env: &JNIEnv, array: jobjectArray) -> Result<Vec<ValType>> {
-    let iter = utils::JavaArrayIter::new(env, array)?;
+pub fn types_from_java<'a>(env: &mut JNIEnv<'a>, array: jobjectArray) -> Result<Vec<ValType>> {
+    let mut iter = utils::JavaArrayIter::new(env, array)?;
     let mut ret = Vec::with_capacity(iter.len());
-    for obj in iter {
+    while let Some(obj) = iter.next(env) {
         let ty = type_from_java(env, obj?)?;
         ret.push(ty);
     }

@@ -35,7 +35,7 @@ See [examples](./examples) for the full example.
 ```java
 public class HelloWasm {
     public static void main(String[] args) {
-        try (Store store = new Store();
+        try (Store<Void> store = Store.withoutData();
              Engine engine = store.engine();
              Module module = Module.fromFile(engine, "./hello.wat");
              Func helloFunc = WasmFunctions.wrap(store, () -> {
