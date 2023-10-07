@@ -15,6 +15,11 @@ jobs:
         include:
           - build: x86_64-linux
             os: ubuntu-latest
+            docker: true
+          - build: aarch64-linux
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            docker: true
           - build: x86_64-macos
             os: macos-latest
           - build: aarch64-macos
@@ -44,23 +49,30 @@ jobs:
     - name: Set build target for cross-compiling
       if: matrix.target != ''
       run: |
-        echo CARGO_BUILD_TARGET=${{ matrix.target }} >> $GITHUB_ENV
-        echo JNILIB_RUST_TARGET=${{ matrix.target }} >> $GITHUB_ENV
-        echo GRADLE_ARGS="${GRADLE_ARGS} -x test">> $GITHUB_ENV
+        echo CARGO_BUILD_TARGET=${{ matrix.target }} >> build_env.txt
+        echo JNILIB_RUST_TARGET=${{ matrix.target }} >> build_env.txt
+        echo GRADLE_ARGS="${GRADLE_ARGS} -x test">> build_env.txt
+        cat build_env.txt >> $GITHUB_ENV
         rustup target add ${{ matrix.target }}
     # Run gradle in a docker container to build the JNI lib on Linux for old glibc compatibility
     - name: Build with Gradle (Linux)
-      if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      if: ${{ matrix.docker }}
       run: |
-        docker build -t build-image ./ci/docker/x86_64-linux
-        docker run --rm --volume $PWD:/build --workdir /build build-image ./gradlew build copyJniLib -x javadoc
+        if [ ! -e build_env.txt ]; then
+          touch build_env.txt
+        fi
+        docker build -t build-image ./ci/docker/${{ matrix.build }}
+        docker run --rm --volume $PWD:/build --workdir /build \
+          --env-file build_env.txt \
+          build-image \
+          ./gradlew build copyJniLib -x javadoc ${GRADLE_ARGS}
     # Otherwise, run gradle normally to build the JNI lib
     - name: Build with Gradle
-      if: ${{ !startsWith(matrix.os, 'ubuntu') }}
+      if: ${{ !matrix.docker }}
       run: ./gradlew build copyJniLib ${GRADLE_ARGS}
     - name: List shared library files
       run:
-        ls build/jni-libs
+        file build/jni-libs/*
     - name: Save JNI lib output
       if: startsWith(github.ref, 'refs/tags/')
       uses: actions/upload-artifact@v2
